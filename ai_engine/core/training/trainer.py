@@ -24,7 +24,16 @@ from ai_engine.core.utilities.config import load_config
 config = load_config("model_config.json")
 
 
-def compute_class_weights(train_dataset, num_labels):
+def configured_class_weight_power(configuration=None):
+    """Return the explicit class-weight exponent used for a training run."""
+    active_configuration = config if configuration is None else configuration
+    power = float(active_configuration.get("class_weight_power", 0.75))
+    if power <= 0:
+        raise ValueError("class_weight_power must be greater than zero.")
+    return power
+
+
+def compute_class_weights(train_dataset, num_labels, class_weight_power=0.75):
     labels = np.array(train_dataset["labels"], dtype=np.int64)
 
     if labels.size == 0:
@@ -35,11 +44,14 @@ def compute_class_weights(train_dataset, num_labels):
 
     weights = np.zeros(num_labels, dtype=np.float32)
     nonzero = counts > 0
-    weights[nonzero] = total / (num_labels * counts[nonzero])
 
-    # Keep average weight near 1.0 for stable optimization.
     if np.any(nonzero):
-        weights[nonzero] = weights[nonzero] / weights[nonzero].mean()
+        # Use a softer-but-still-stronger imbalance adjustment than the old
+        # inverse-frequency approach, keeping the average weight around 1.0.
+        raw_weights = total / (num_labels * counts[nonzero])
+        adjusted = np.power(raw_weights, class_weight_power)
+        adjusted = adjusted / adjusted.mean()
+        weights[nonzero] = adjusted
 
     return torch.tensor(weights, dtype=torch.float32)
 
@@ -96,6 +108,7 @@ def create_trainer(
         class_weights = compute_class_weights(
             train_dataset,
             model.config.num_labels,
+            class_weight_power=configured_class_weight_power(),
         )
 
     trainer = EmotionTrainer(

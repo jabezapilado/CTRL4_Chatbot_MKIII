@@ -7,7 +7,7 @@
 
     "batch_size": 16,
 
-    "learning_rate": 1.5e-5,
+    "learning_rate": 1.8e-5,
 
     "epochs": 5,
 
@@ -15,9 +15,11 @@
 
     "use_class_weights": true,
 
+    "class_weight_power": 0.75,
+
     "warmup_ratio": 0.1,
 
-    "label_smoothing_factor": 0.05,
+    "label_smoothing_factor": 0.02,
 
     "evaluation_strategy": "epoch",
 

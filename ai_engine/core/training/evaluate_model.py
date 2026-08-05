@@ -3,18 +3,19 @@
 This script evaluates the saved model on the test split and generates
 artifacts used in Chapter 4 of the thesis.
 
-Evaluation artifacts are stored under docs/models/evaluation/.
+Evaluation artifacts are written to an explicit model-version output directory.
 """
+
+from pathlib import Path
 
 from ai_engine.core.models.model_loader import load_model
 from ai_engine.core.training.dataset import prepare_dataset, label_encoder
 from ai_engine.core.tokenizers.tokenizer import load_tokenizer
 
 import numpy as np
-from transformers import Trainer
+from transformers import AutoModelForSequenceClassification, AutoTokenizer, Trainer
 
 import json
-import os
 import pandas as pd
 from sklearn.metrics import (
     accuracy_score,
@@ -25,8 +26,16 @@ from sklearn.metrics import (
 import matplotlib.pyplot as plt
 
 
-BASE_OUTPUT_DIR = os.path.join("docs", "models")
-EVALUATION_OUTPUT_DIR = os.path.join(BASE_OUTPUT_DIR, "evaluation")
+DEFAULT_EVALUATION_OUTPUT_DIR = Path("ai_engine") / "models" / "emotion_model" / "evaluation"
+DEFAULT_TRAINING_HISTORY_PATH = Path("ai_engine") / "models" / "emotion_model" / "training_history.json"
+REQUIRED_EVALUATION_FILES = (
+    "overall_metrics.json",
+    "overall_metrics.csv",
+    "confusion_matrix.csv",
+    "classification_report.csv",
+    "per_class_metrics.csv",
+    "class_balance_summary.csv",
+)
 MAX_HISTORY_EPOCHS = 5
 
 CLASS_NAMES = [
@@ -35,10 +44,37 @@ CLASS_NAMES = [
 ]
 
 
-def load_resources():
-    """Load the trained model, tokenizer, and prepared dataset."""
-    model = load_model("english")
-    tokenizer = load_tokenizer("english")
+def _resolve_output_dir(output_dir: str | Path | None) -> Path:
+    resolved = Path(output_dir) if output_dir is not None else DEFAULT_EVALUATION_OUTPUT_DIR
+    resolved.mkdir(parents=True, exist_ok=True)
+    return resolved
+
+
+def validate_evaluation_output(output_dir: str | Path) -> Path:
+    """Ensure a completed evaluation produced the minimum publishable artifacts."""
+    resolved = Path(output_dir)
+    missing = [
+        filename
+        for filename in REQUIRED_EVALUATION_FILES
+        if not (resolved / filename).is_file()
+    ]
+    if missing:
+        raise FileNotFoundError(
+            "Evaluation output is incomplete at "
+            f"{resolved}: {', '.join(missing)}"
+        )
+    return resolved
+
+
+def load_resources(model_dir: str | Path | None = None):
+    """Load a saved model, tokenizer, and prepared test dataset."""
+    if model_dir is None:
+        model = load_model("english")
+        tokenizer = load_tokenizer("english")
+    else:
+        model_path = Path(model_dir)
+        model = AutoModelForSequenceClassification.from_pretrained(str(model_path))
+        tokenizer = AutoTokenizer.from_pretrained(str(model_path))
     dataset = prepare_dataset()
     test_dataset = dataset["test"]
     return model, tokenizer, test_dataset
@@ -63,9 +99,9 @@ def predict_test_set(model, tokenizer, test_dataset):
     return y_true, y_pred
 
 
-def compute_overall_metrics(y_true, y_pred):
+def compute_overall_metrics(y_true, y_pred, output_dir: str | Path | None = None):
     """Compute overall accuracy, precision, recall, and F1-score."""
-    os.makedirs(EVALUATION_OUTPUT_DIR, exist_ok=True)
+    evaluation_dir = _resolve_output_dir(output_dir)
 
     accuracy = accuracy_score(y_true, y_pred)
     precision, recall, f1, _ = precision_recall_fscore_support(
@@ -82,7 +118,7 @@ def compute_overall_metrics(y_true, y_pred):
         "F1-score": f1,
     }
 
-    with open(os.path.join(EVALUATION_OUTPUT_DIR, "overall_metrics.json"), "w") as f:
+    with open(evaluation_dir / "overall_metrics.json", "w") as f:
         json.dump(metrics, f, indent=4)
 
     pd.DataFrame([
@@ -92,7 +128,7 @@ def compute_overall_metrics(y_true, y_pred):
         }
         for key, value in metrics.items()
     ]).to_csv(
-        os.path.join(EVALUATION_OUTPUT_DIR, "overall_metrics.csv"),
+        evaluation_dir / "overall_metrics.csv",
         index=False,
     )
 
@@ -100,9 +136,41 @@ def compute_overall_metrics(y_true, y_pred):
 
     return metrics
 
-def generate_overall_metrics_chart(metrics):
+def generate_class_balance_summary(y_true, y_pred, output_dir: str | Path | None = None):
+    """Save per-class true, predicted, and misclassification counts."""
+    evaluation_dir = _resolve_output_dir(output_dir)
+
+    true_labels = [CLASS_NAMES[label] for label in y_true]
+    predicted_labels = [CLASS_NAMES[label] for label in y_pred]
+
+    true_counts = pd.Series(true_labels).value_counts().reindex(CLASS_NAMES, fill_value=0)
+    predicted_counts = pd.Series(predicted_labels).value_counts().reindex(CLASS_NAMES, fill_value=0)
+
+    misclassified = []
+    for label in CLASS_NAMES:
+        mask = [true == label and pred != label for true, pred in zip(true_labels, predicted_labels)]
+        misclassified.append(sum(mask))
+
+    summary_df = pd.DataFrame(
+        {
+            "class": CLASS_NAMES,
+            "true_count": true_counts.values,
+            "predicted_count": predicted_counts.values,
+            "misclassified_count": misclassified,
+        }
+    )
+    summary_df.to_csv(
+        evaluation_dir / "class_balance_summary.csv",
+        index=False,
+    )
+
+    print("Class balance summary saved.")
+    return summary_df
+
+
+def generate_overall_metrics_chart(metrics, output_dir: str | Path | None = None):
     """Generate and save the overall model performance chart."""
-    os.makedirs(EVALUATION_OUTPUT_DIR, exist_ok=True)
+    evaluation_dir = _resolve_output_dir(output_dir)
 
     metric_names = list(metrics.keys())
     metric_values = list(metrics.values())
@@ -119,19 +187,16 @@ def generate_overall_metrics_chart(metrics):
 
     plt.tight_layout()
 
-    output_path = os.path.join(
-        EVALUATION_OUTPUT_DIR,
-        "overall_metrics.png",
-    )
+    output_path = evaluation_dir / "overall_metrics.png"
     plt.savefig(output_path, dpi=300, bbox_inches="tight")
     plt.close()
 
     print(f"Overall metrics chart saved to {output_path}")
 
 
-def generate_confusion_matrix(y_true, y_pred):
+def generate_confusion_matrix(y_true, y_pred, output_dir: str | Path | None = None):
     """Generate and save the confusion matrix as both PNG and CSV."""
-    os.makedirs(EVALUATION_OUTPUT_DIR, exist_ok=True)
+    evaluation_dir = _resolve_output_dir(output_dir)
 
     cm = confusion_matrix(
         y_true,
@@ -167,11 +232,11 @@ def generate_confusion_matrix(y_true, y_pred):
         index=CLASS_NAMES,
         columns=CLASS_NAMES,
     ).to_csv(
-        os.path.join(EVALUATION_OUTPUT_DIR, "confusion_matrix.csv")
+        evaluation_dir / "confusion_matrix.csv"
     )
 
     plt.savefig(
-        os.path.join(EVALUATION_OUTPUT_DIR, "confusion_matrix.png"),
+        evaluation_dir / "confusion_matrix.png",
         dpi=300,
         bbox_inches="tight",
     )
@@ -180,9 +245,9 @@ def generate_confusion_matrix(y_true, y_pred):
     print("Confusion matrix saved.")
 
 
-def generate_classification_report(y_true, y_pred):
+def generate_classification_report(y_true, y_pred, output_dir: str | Path | None = None):
     """Generate and save the classification report."""
-    os.makedirs(EVALUATION_OUTPUT_DIR, exist_ok=True)
+    evaluation_dir = _resolve_output_dir(output_dir)
 
     report = classification_report(
         y_true,
@@ -195,10 +260,7 @@ def generate_classification_report(y_true, y_pred):
 
     report_df = pd.DataFrame(report).transpose()
 
-    report_path = os.path.join(
-        EVALUATION_OUTPUT_DIR,
-        "classification_report.csv",
-    )
+    report_path = evaluation_dir / "classification_report.csv"
     report_df.to_csv(report_path, index=True)
 
     print(f"Classification report saved to {report_path}")
@@ -206,9 +268,9 @@ def generate_classification_report(y_true, y_pred):
     return report_df
 
 
-def generate_per_class_metrics(report_df):
+def generate_per_class_metrics(report_df, output_dir: str | Path | None = None):
     """Generate and save the per-class metrics chart from the classification report."""
-    os.makedirs(EVALUATION_OUTPUT_DIR, exist_ok=True)
+    evaluation_dir = _resolve_output_dir(output_dir)
 
     class_df = report_df.loc[
         CLASS_NAMES,
@@ -223,15 +285,12 @@ def generate_per_class_metrics(report_df):
     plt.xticks(ticks=range(len(CLASS_NAMES)), labels=CLASS_NAMES, rotation=45, ha="right")
     plt.tight_layout()
 
-    output_path = os.path.join(
-        EVALUATION_OUTPUT_DIR,
-        "per_class_metrics.png",
-    )
+    output_path = evaluation_dir / "per_class_metrics.png"
     plt.savefig(output_path, dpi=300, bbox_inches="tight")
     plt.close()
 
     class_df.to_csv(
-        os.path.join(EVALUATION_OUTPUT_DIR, "per_class_metrics.csv")
+        evaluation_dir / "per_class_metrics.csv"
     )
 
     print(f"Per-class metrics saved to {output_path}")
@@ -239,17 +298,24 @@ def generate_per_class_metrics(report_df):
     return class_df
 
 
-def generate_training_history_plots():
+def generate_training_history_plots(
+    output_dir: str | Path | None = None,
+    history_path: str | Path | None = None,
+):
     """Load training history and generate training/validation loss and accuracy plots."""
-    history_path = os.path.join(BASE_OUTPUT_DIR, "training_history.json")
-    if not os.path.exists(history_path):
-        print(f"Training history file '{history_path}' not found. Skipping training history plots generation.")
+    evaluation_dir = _resolve_output_dir(output_dir)
+    resolved_history_path = (
+        Path(history_path) if history_path is not None else DEFAULT_TRAINING_HISTORY_PATH
+    )
+    if not resolved_history_path.is_file():
+        print(
+            "Training history file "
+            f"'{resolved_history_path}' not found. Skipping training history plots generation."
+        )
         return
 
-    with open(history_path, "r") as f:
+    with open(resolved_history_path, "r") as f:
         history = json.load(f)
-
-    os.makedirs(EVALUATION_OUTPUT_DIR, exist_ok=True)
 
     # Hugging Face Trainer log_history format: list of dicts
     if isinstance(history, list):
@@ -381,7 +447,7 @@ def generate_training_history_plots():
             )
             plt.legend(loc="upper left")
             plt.tight_layout()
-            loss_plot_path = os.path.join(EVALUATION_OUTPUT_DIR, "training_validation_loss.png")
+            loss_plot_path = evaluation_dir / "training_validation_loss.png"
             plt.savefig(loss_plot_path, dpi=300, bbox_inches="tight")
             plt.close()
             print(f"Training and validation loss plot saved to {loss_plot_path}")
@@ -425,10 +491,7 @@ def generate_training_history_plots():
         )
         plt.legend(loc="upper left")
         plt.tight_layout()
-        acc_plot_path = os.path.join(
-            EVALUATION_OUTPUT_DIR,
-            "training_validation_accuracy.png",
-        )
+        acc_plot_path = evaluation_dir / "training_validation_accuracy.png"
         plt.savefig(acc_plot_path, dpi=300, bbox_inches="tight")
         plt.close()
         print(f"Training and validation accuracy plot saved to {acc_plot_path}")
@@ -448,7 +511,7 @@ def generate_training_history_plots():
     plt.ylabel("Loss")
     plt.legend()
     plt.tight_layout()
-    loss_plot_path = os.path.join(EVALUATION_OUTPUT_DIR, "training_validation_loss.png")
+    loss_plot_path = evaluation_dir / "training_validation_loss.png"
     plt.savefig(loss_plot_path, dpi=300, bbox_inches="tight")
     plt.close()
     print(f"Training and validation loss plot saved to {loss_plot_path}")
@@ -470,7 +533,7 @@ def generate_training_history_plots():
         plt.ylim(0, 1.05)
         plt.legend()
         plt.tight_layout()
-        acc_plot_path = os.path.join(EVALUATION_OUTPUT_DIR, "training_validation_accuracy.png")
+        acc_plot_path = evaluation_dir / "training_validation_accuracy.png"
         plt.savefig(acc_plot_path, dpi=300, bbox_inches="tight")
         plt.close()
         print(f"Training and validation accuracy plot saved to {acc_plot_path}")
@@ -478,10 +541,19 @@ def generate_training_history_plots():
         print("No accuracy data found in training history. Skipping accuracy plot generation.")
 
 
-def main():
-    generate_training_history_plots()
+def main(
+    model_dir: str | Path | None = None,
+    output_dir: str | Path | None = None,
+    history_path: str | Path | None = None,
+) -> Path:
+    """Evaluate one saved model into its own explicit artifact directory."""
+    evaluation_dir = _resolve_output_dir(output_dir)
+    generate_training_history_plots(
+        output_dir=evaluation_dir,
+        history_path=history_path,
+    )
 
-    model, tokenizer, test_dataset = load_resources()
+    model, tokenizer, test_dataset = load_resources(model_dir=model_dir)
 
     y_true, y_pred = predict_test_set(
         model,
@@ -491,15 +563,18 @@ def main():
     print(f"Test samples: {len(y_true)}")
     print("Predictions generated successfully.")
 
-    metrics = compute_overall_metrics(y_true, y_pred)
+    metrics = compute_overall_metrics(y_true, y_pred, output_dir=evaluation_dir)
     print(metrics)
-    generate_overall_metrics_chart(metrics)
+    generate_overall_metrics_chart(metrics, output_dir=evaluation_dir)
 
-    generate_confusion_matrix(y_true, y_pred)
-    report_df = generate_classification_report(y_true, y_pred)
+    generate_confusion_matrix(y_true, y_pred, output_dir=evaluation_dir)
+    report_df = generate_classification_report(y_true, y_pred, output_dir=evaluation_dir)
     print(report_df)
-    per_class_df = generate_per_class_metrics(report_df)
+    per_class_df = generate_per_class_metrics(report_df, output_dir=evaluation_dir)
     print(per_class_df)
+    balance_df = generate_class_balance_summary(y_true, y_pred, output_dir=evaluation_dir)
+    print(balance_df)
+    return validate_evaluation_output(evaluation_dir)
 
 
 if __name__ == "__main__":
