@@ -140,6 +140,10 @@ class AdministratorAccountManagementContractTests(unittest.TestCase):
 
         for identifier in (
             "create-account-btn",
+            "download-account-template-btn",
+            "import-accounts-btn",
+            "account-import-dialog",
+            "account-import-form",
             "account-dialog",
             "account-filter-form",
             "account-list-body",
@@ -160,6 +164,7 @@ class AdministratorAccountManagementContractTests(unittest.TestCase):
             'return `/api/accounts/staff/${account.id}`',
             'return `/api/accounts/admin/${account.id}`',
             'return `/api/accounts/${account.id}`',
+            "/api/accounts/import/students",
         ):
             with self.subTest(endpoint=endpoint):
                 self.assertIn(endpoint, script)
@@ -179,6 +184,8 @@ class AdministratorAccountManagementContractTests(unittest.TestCase):
         self.assertIn("function loadPrograms", script)
         self.assertIn("function openProgramForm", script)
         self.assertIn("function saveProgram", script)
+        self.assertIn("function downloadStudentAccountTemplate", script)
+        self.assertIn("function downloadImportedCredentials", script)
         self.assertNotIn("window.prompt", script)
         self.assertIn("function sortRecords", script)
         self.assertIn("numeric: true", script)

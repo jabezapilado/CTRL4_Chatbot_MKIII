@@ -5,6 +5,7 @@ from ..request_validation import require_any_role, require_role
 
 from ..services.account_service import (
     create_account_service,
+    create_student_accounts_from_csv_service,
     deactivate_admin_account_service,
     deactivate_staff_account_service,
     deactivate_student_account_service,
@@ -17,6 +18,7 @@ from ..services.account_service import (
     get_own_staff_operational_profile_service,
     update_own_staff_password_service,
     update_own_staff_operational_profile_service,
+    StudentAccountImportValidationError,
 )
 from ..services.program_service import program_service
 
@@ -258,6 +260,41 @@ def create_account_route():
                 "student_number": account["student_number"],
                 "staff_number": account["staff_number"],
             },
+        }
+    ), 201
+
+
+@account_bp.post("/import/students")
+def import_student_accounts_route():
+    user, error = require_role("admin")
+    if error:
+        return error
+
+    uploaded_file = request.files.get("file")
+    if uploaded_file is None:
+        return _error_response("Select a CSV file to import.", 400)
+
+    try:
+        imported = create_student_accounts_from_csv_service(uploaded_file.read())
+    except StudentAccountImportValidationError as exc:
+        return _error_response(str(exc), 400)
+    except FileExistsError as exc:
+        return _error_response(str(exc), 409)
+    except Exception:
+        logger.exception("Failed to import student accounts.")
+        return _error_response("Internal server error.", 500)
+
+    logger.info(
+        "Admin %s imported %s student accounts",
+        user["id"],
+        len(imported),
+    )
+
+    return jsonify(
+        {
+            "success": True,
+            "message": f"Imported {len(imported)} student account(s). Download the one-time credentials file now.",
+            "data": {"items": imported},
         }
     ), 201
 

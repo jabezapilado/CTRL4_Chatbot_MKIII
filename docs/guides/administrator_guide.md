@@ -25,9 +25,21 @@ The portal supports the approved existing operations:
 
 - create a student, Guidance-staff, or administrator account using the fields
   accepted for the selected role;
+- download the student-account CSV template and import up to 500 student
+  records at a time;
 - update approved role-specific profile fields; and
 - deactivate active accounts using the existing role-specific deactivation
   operation.
+
+For CSV onboarding, use the exact UTF-8 columns and order
+`full_name,email,gender,program`. The import can create **students only**; it
+does not accept roles, account numbers, or passwords. Each row must use an
+active program and a unique email address. CTRL4 validates the whole file
+before it starts creating accounts, assigns student numbers server-side, and
+downloads the generated one-time credentials CSV after a successful import.
+Save that download only in the Guidance Office's approved secure location and
+provide the temporary credentials privately, because the temporary passwords
+are not displayed again.
 
 Unsupported role-specific fields are rejected rather than ignored. Account
 roles are selected when creating an account and are not changed by the current

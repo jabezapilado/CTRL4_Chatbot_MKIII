@@ -63,6 +63,7 @@ guidance-record access. All endpoints in the following table require `admin`.
 | --- | --- | --- | --- | --- |
 | GET | `/api/accounts` | Optional `role`, `status`, `q` | 200 `data.items` | 400 invalid filters |
 | POST | `/api/accounts` | See role-specific creation fields below | 201 id/status and generated number when applicable | 400 validation/unsupported fields; 409 duplicate email |
+| POST | `/api/accounts/import/students` | Multipart `file`: UTF-8 CSV with exact headers `full_name,email,gender,program` | 201 imported `data.items` with one-time temporary credentials | 400 missing/invalid file, malformed rows, inactive program, or duplicate rows; 409 duplicate email |
 | PATCH | `/api/accounts/<account_id>` | Student fields: `full_name`, `email`, `gender`, `program` | 200 updated account | 400, 404, 409 |
 | DELETE | `/api/accounts/<account_id>` | None | 200 disabled status | 400, 404 |
 | PATCH | `/api/accounts/staff/<account_id>` | Approved staff profile fields | 200 updated account | 400, 404, 409 |
@@ -77,6 +78,13 @@ and `program`. A staff account may provide `gender`, `assigned_programs`,
 `consultation_schedules`. An administrator may provide `gender` only; student,
 staff, counselor-profile, and account-number fields are rejected. The listing
 search composes with role/status and searches only approved identifier fields.
+
+The student CSV import is limited to 500 nonblank rows and 1 MB. It creates
+only student accounts, assigns account numbers server-side, and deliberately
+does not accept a role, student number, or password column. Its successful
+response contains the temporary passwords exactly once so the administrator
+portal can immediately create a credentials download; neither password hashes
+nor those temporary passwords are exposed by subsequent account APIs.
 
 ### Manual-booking student search — staff only
 

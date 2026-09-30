@@ -25,6 +25,11 @@ const staffProfileFields = document.getElementById("staff-profile-fields");
 const accountPasswordField = document.getElementById("account-password-field");
 const accountPassword = document.getElementById("account-password");
 const accountFormSubmit = document.getElementById("account-form-submit");
+const accountImportDialog = document.getElementById("account-import-dialog");
+const accountImportForm = document.getElementById("account-import-form");
+const accountImportMessage = document.getElementById("account-import-message");
+const accountImportFile = document.getElementById("account-import-file");
+const accountImportSubmit = document.getElementById("account-import-submit");
 const studentPasswordResetDialog = document.getElementById(
   "student-password-reset-dialog",
 );
@@ -377,6 +382,102 @@ async function responsePayload(response, fallbackMessage) {
     throw new Error(payload.message || fallbackMessage);
   }
   return payload;
+}
+
+function csvCell(value) {
+  const text = String(value ?? "");
+  return /[",\r\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
+}
+
+function downloadCsv(filename, rows) {
+  const csv = rows.map((row) => row.map(csvCell).join(",")).join("\r\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.hidden = true;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+function downloadStudentAccountTemplate() {
+  const exampleProgram =
+    programs[0]?.display_name || "Replace with an active program";
+  downloadCsv("ctrl4-student-account-import-template.csv", [
+    ["full_name", "email", "gender", "program"],
+    [
+      "Example Student",
+      "example@student.hau.edu.ph",
+      "Prefer not to say",
+      exampleProgram,
+    ],
+  ]);
+}
+
+function downloadImportedCredentials(items) {
+  downloadCsv("ctrl4-imported-student-credentials.csv", [
+    ["full_name", "email", "student_number", "temporary_password"],
+    ...items.map((item) => [
+      item.full_name,
+      item.email,
+      item.student_number,
+      item.temporary_password,
+    ]),
+  ]);
+}
+
+function openAccountImport() {
+  accountImportForm.reset();
+  setFeedback(accountImportMessage);
+  accountImportDialog.showModal();
+  accountImportFile.focus();
+}
+
+function closeAccountImport() {
+  if (accountImportDialog.open) accountImportDialog.close();
+}
+
+async function importStudentAccounts(event) {
+  event.preventDefault();
+  const file = accountImportFile.files?.[0];
+  if (!file) {
+    setFeedback(accountImportMessage, "Select a CSV file.", "error");
+    return;
+  }
+
+  accountImportSubmit.disabled = true;
+  setFeedback(accountImportMessage, "Validating and importing accounts…");
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+    const response = await fetch(
+      `${ADMIN_API_BASE}/api/accounts/import/students`,
+      { method: "POST", body: formData },
+    );
+    const result = await responsePayload(
+      response,
+      "Unable to import student accounts.",
+    );
+    const items = result.data?.items || [];
+    if (!items.length) {
+      throw new Error("The import returned no accounts.");
+    }
+    downloadImportedCredentials(items);
+    closeAccountImport();
+    await loadAccounts();
+    setFeedback(accountListMessage, result.message, "success");
+  } catch (error) {
+    setFeedback(
+      accountImportMessage,
+      error.message || "Unable to import student accounts.",
+      "error",
+    );
+  } finally {
+    accountImportSubmit.disabled = false;
+  }
 }
 
 async function loadAccounts() {
@@ -881,6 +982,18 @@ function resetFilters() {
 document.getElementById("create-account-btn").addEventListener("click", () => {
   openAccountForm();
 });
+document
+  .getElementById("download-account-template-btn")
+  .addEventListener("click", downloadStudentAccountTemplate);
+document
+  .getElementById("import-accounts-btn")
+  .addEventListener("click", openAccountImport);
+document
+  .getElementById("account-import-close")
+  .addEventListener("click", closeAccountImport);
+document
+  .getElementById("account-import-cancel")
+  .addEventListener("click", closeAccountImport);
 document.getElementById("create-program-btn").addEventListener("click", () => {
   openProgramForm();
 });
@@ -918,8 +1031,12 @@ document.querySelectorAll("[data-program-sort]").forEach((button) => {
   });
 });
 accountForm.addEventListener("submit", saveAccount);
+accountImportForm.addEventListener("submit", importStudentAccounts);
 accountDialog.addEventListener("click", (event) => {
   if (event.target === accountDialog) closeAccountForm();
+});
+accountImportDialog.addEventListener("click", (event) => {
+  if (event.target === accountImportDialog) closeAccountImport();
 });
 studentPasswordResetForm.addEventListener("submit", submitStudentPasswordReset);
 studentPasswordResetDialog.addEventListener("click", (event) => {

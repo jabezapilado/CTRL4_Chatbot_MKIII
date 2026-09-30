@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import unittest
+from io import BytesIO
 from unittest.mock import patch
 from flask import Flask
 
@@ -10,6 +11,130 @@ from backend.server.services import account_service
 
 
 class AccountBoundaryTests(unittest.TestCase):
+    def test_student_account_csv_import_creates_only_validated_students(self) -> None:
+        csv_content = (
+            b"full_name,email,gender,program\n"
+            b"Student One,one@student.hau.edu.ph,Female,BS Computer Science\n"
+        )
+        created_account = {
+            "id": 12,
+            "student_number": "2026-00001",
+            "staff_number": None,
+        }
+
+        with patch.object(
+            account_service,
+            "fetch_account_by_email",
+            return_value=None,
+        ), patch.object(
+            account_service.program_service,
+            "active_program_names",
+            return_value={"BS Computer Science"},
+        ), patch.object(
+            account_service,
+            "_create_account_with_duplicate_email_translation",
+            return_value=created_account,
+        ) as create_account:
+            imported = account_service.create_student_accounts_from_csv_service(
+                csv_content,
+            )
+
+        self.assertEqual(imported[0]["student_number"], "2026-00001")
+        self.assertEqual(imported[0]["email"], "one@student.hau.edu.ph")
+        self.assertTrue(imported[0]["temporary_password"])
+        self.assertEqual(create_account.call_args.kwargs["role"], "student")
+        self.assertIsNone(create_account.call_args.kwargs["student_number"])
+        self.assertTrue(
+            account_service.check_password_hash(
+                create_account.call_args.kwargs["password_hash"],
+                imported[0]["temporary_password"],
+            )
+        )
+
+    def test_student_account_csv_import_rejects_duplicate_rows_before_creation(self) -> None:
+        csv_content = (
+            b"full_name,email,gender,program\n"
+            b"Student One,student@student.hau.edu.ph,Female,BS Computer Science\n"
+            b"Student Two,student@student.hau.edu.ph,Male,BS Computer Science\n"
+        )
+        with patch.object(
+            account_service,
+            "fetch_account_by_email",
+            return_value=None,
+        ), patch.object(
+            account_service.program_service,
+            "active_program_names",
+            return_value={"BS Computer Science"},
+        ), patch.object(
+            account_service,
+            "_create_account_with_duplicate_email_translation",
+        ) as create_account, self.assertRaisesRegex(
+            account_service.StudentAccountImportValidationError,
+            "Email is duplicated in this CSV",
+        ):
+            account_service.create_student_accounts_from_csv_service(csv_content)
+
+        create_account.assert_not_called()
+
+    def test_student_account_csv_import_rejects_extra_row_columns(self) -> None:
+        csv_content = (
+            b"full_name,email,gender,program\n"
+            b"Student One,student@student.hau.edu.ph,Female,BS Computer Science,staff\n"
+        )
+        with self.assertRaisesRegex(
+            account_service.StudentAccountImportValidationError,
+            "Too many columns",
+        ):
+            account_service.create_student_accounts_from_csv_service(csv_content)
+
+    def test_student_account_csv_import_route_requires_admin_role(self) -> None:
+        from backend.server.routes import account_routes
+        from backend.server.routes.account_routes import account_bp
+
+        app = Flask(__name__)
+        app.secret_key = "student-account-import-routes"
+        app.register_blueprint(account_bp)
+
+        def client_for(role: str):
+            client = app.test_client()
+            with client.session_transaction() as session:
+                session["hau_user"] = {
+                    "id": 7,
+                    "email": f"{role}@example.test",
+                    "role": role,
+                }
+            return client
+
+        imported = [
+            {
+                "row_number": 2,
+                "full_name": "Student One",
+                "email": "student@example.test",
+                "student_number": "2026-00001",
+                "temporary_password": "temporary-password",
+            }
+        ]
+        with patch.object(
+            account_routes,
+            "create_student_accounts_from_csv_service",
+            return_value=imported,
+        ) as import_students:
+            response = client_for("admin").post(
+                "/api/accounts/import/students",
+                data={"file": (BytesIO(b"csv"), "students.csv")},
+            )
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.get_json()["data"]["items"], imported)
+        import_students.assert_called_once_with(b"csv")
+        self.assertEqual(
+            client_for("student").post(
+                "/api/accounts/import/students",
+                data={"file": (BytesIO(b"csv"), "students.csv")},
+            ).status_code,
+            403,
+        )
+
     def test_student_account_retries_after_concurrent_number_collision(self) -> None:
         from backend.server import db
 

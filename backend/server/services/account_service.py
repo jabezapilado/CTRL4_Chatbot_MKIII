@@ -1,6 +1,9 @@
+import csv
 import hmac
 import json
 import re
+import secrets
+from io import StringIO
 from datetime import datetime
 
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -87,6 +90,14 @@ CONSULTATION_SCHEDULE_FIELDS = frozenset({"room", "days", "time"})
 MAX_APPOINTMENT_SLOTS = 24
 MAX_CONSULTATION_MODES = 12
 MAX_CONSULTATION_MODE_LENGTH = 80
+STUDENT_ACCOUNT_IMPORT_COLUMNS = (
+    "full_name",
+    "email",
+    "gender",
+    "program",
+)
+MAX_STUDENT_ACCOUNT_IMPORT_ROWS = 500
+MAX_STUDENT_ACCOUNT_IMPORT_BYTES = 1_000_000
 WEEKDAY_ORDER = (
     "Monday",
     "Tuesday",
@@ -96,6 +107,127 @@ WEEKDAY_ORDER = (
     "Saturday",
     "Sunday",
 )
+
+
+class StudentAccountImportValidationError(ValueError):
+    """Raised when a student-account import is unsafe to begin."""
+
+
+def _generated_temporary_password() -> str:
+    """Return a one-time password; callers must never persist or log it."""
+    return f"C4!{secrets.token_urlsafe(12)}"
+
+
+def _import_error_message(errors: list[str]) -> str:
+    displayed_errors = errors[:8]
+    suffix = "" if len(errors) <= len(displayed_errors) else " Review the CSV and try again."
+    return "Import was not completed. " + " ".join(displayed_errors) + suffix
+
+
+def create_student_accounts_from_csv_service(file_bytes: object) -> list[dict]:
+    """Validate then import student accounts from the approved CSV template.
+
+    The CSV intentionally does not accept roles or passwords. It can only create
+    students, numbers are allocated by the existing persistence function, and
+    temporary passwords are generated server-side for the one-time result file.
+    """
+    if not isinstance(file_bytes, bytes) or not file_bytes:
+        raise StudentAccountImportValidationError("Upload a non-empty CSV file.")
+    if len(file_bytes) > MAX_STUDENT_ACCOUNT_IMPORT_BYTES:
+        raise StudentAccountImportValidationError("The CSV file is too large.")
+
+    try:
+        content = file_bytes.decode("utf-8-sig")
+    except UnicodeDecodeError as exc:
+        raise StudentAccountImportValidationError(
+            "The CSV must use UTF-8 encoding."
+        ) from exc
+
+    try:
+        reader = csv.DictReader(StringIO(content))
+    except csv.Error as exc:
+        raise StudentAccountImportValidationError("The CSV could not be read.") from exc
+
+    headers = tuple((header or "").strip() for header in (reader.fieldnames or ()))
+    if headers != STUDENT_ACCOUNT_IMPORT_COLUMNS:
+        required = ", ".join(STUDENT_ACCOUNT_IMPORT_COLUMNS)
+        raise StudentAccountImportValidationError(
+            f"Use the required CSV columns in this order: {required}."
+        )
+
+    rows: list[dict] = []
+    errors: list[str] = []
+    seen_emails: set[str] = set()
+    try:
+        for row_number, row in enumerate(reader, start=2):
+            if len(rows) >= MAX_STUDENT_ACCOUNT_IMPORT_ROWS:
+                errors.append(
+                    f"Only {MAX_STUDENT_ACCOUNT_IMPORT_ROWS} accounts can be imported at one time."
+                )
+                break
+            if (row or {}).get(None):
+                errors.append(f"Row {row_number}: Too many columns.")
+                continue
+            raw_values = {
+                column: str((row or {}).get(column) or "").strip()
+                for column in STUDENT_ACCOUNT_IMPORT_COLUMNS
+            }
+            if not any(raw_values.values()):
+                continue
+
+            try:
+                full_name = _validate_full_name(raw_values["full_name"])
+                email = _validate_email(raw_values["email"])
+                gender = _validate_gender(raw_values["gender"])
+                program = _validate_student_program(raw_values["program"])
+            except (ValueError, FileExistsError) as exc:
+                errors.append(f"Row {row_number}: {exc}")
+                continue
+
+            if email in seen_emails:
+                errors.append(f"Row {row_number}: Email is duplicated in this CSV.")
+                continue
+            seen_emails.add(email)
+            rows.append(
+                {
+                    "row_number": row_number,
+                    "full_name": full_name,
+                    "email": email,
+                    "gender": gender,
+                    "program": program,
+                }
+            )
+    except csv.Error as exc:
+        raise StudentAccountImportValidationError("The CSV could not be read.") from exc
+
+    if not rows:
+        errors.append("The CSV does not contain any account rows.")
+    if errors:
+        raise StudentAccountImportValidationError(_import_error_message(errors))
+
+    imported: list[dict] = []
+    for row in rows:
+        temporary_password = _generated_temporary_password()
+        account = _create_account_with_duplicate_email_translation(
+            full_name=row["full_name"],
+            email=row["email"],
+            password_hash=generate_password_hash(temporary_password),
+            role="student",
+            student_number=None,
+            staff_number=None,
+            gender=row["gender"],
+            program=row["program"],
+        )
+        imported.append(
+            {
+                "row_number": row["row_number"],
+                "full_name": row["full_name"],
+                "email": row["email"],
+                "student_number": account["student_number"],
+                "temporary_password": temporary_password,
+            }
+        )
+    return imported
 
 
 def _validate_full_name(value: object) -> str:

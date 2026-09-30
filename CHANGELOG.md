@@ -10,6 +10,14 @@ The format follows the principles of **Keep a Changelog**.
 
 ### Added
 
+- Added an administrator-only student-account CSV import workflow for Guidance
+  Office onboarding. It accepts the published UTF-8 template with only
+  `full_name`, `email`, `gender`, and `program`; validates all rows and active
+  programs before creation; allocates student numbers server-side; and provides
+  a one-time credentials CSV download. Uploads cannot create staff or
+  administrator accounts or set passwords, and temporary passwords are neither
+  logged nor returned by later account-listing requests.
+
 - Added client-side pagination to the staff Inbox and Flagged Cases (7 records
   per page), Chatbot Feedback, dashboard analytics and reports (10 records per
   page), and administrator account and program-management tables (8 records

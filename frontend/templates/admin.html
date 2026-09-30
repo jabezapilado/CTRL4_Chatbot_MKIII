@@ -80,9 +80,17 @@
             <p class="admin-eyebrow">Authorized accounts</p>
             <h2 id="account-list-title">Accounts</h2>
           </div>
-          <button class="btn btn-primary" type="button" id="create-account-btn">
-            Create account
-          </button>
+          <div class="account-heading-actions">
+            <button class="btn btn-outline" type="button" id="download-account-template-btn">
+              Download CSV template
+            </button>
+            <button class="btn btn-outline" type="button" id="import-accounts-btn">
+              Import student accounts
+            </button>
+            <button class="btn btn-primary" type="button" id="create-account-btn">
+              Create account
+            </button>
+          </div>
         </div>
 
         <form class="account-toolbar" id="account-filter-form">
@@ -250,6 +258,64 @@
         </div>
       </section>
     </main>
+
+    <dialog
+      class="account-dialog"
+      id="account-import-dialog"
+      aria-labelledby="account-import-title"
+    >
+      <form class="account-form" id="account-import-form" novalidate>
+        <div class="account-dialog-header">
+          <div>
+            <p class="admin-eyebrow">Student account onboarding</p>
+            <h2 id="account-import-title">Import student accounts</h2>
+          </div>
+          <button
+            class="account-dialog-close"
+            type="button"
+            id="account-import-close"
+            aria-label="Close account import"
+          >
+            ×
+          </button>
+        </div>
+
+        <p id="account-import-message" class="admin-feedback" role="alert"></p>
+        <fieldset class="account-form-section">
+          <legend>CSV file</legend>
+          <p class="account-form-help">
+            Download the template and upload UTF-8 CSV records with these exact
+            columns: <code>full_name,email,gender,program</code>. This import
+            creates student accounts only, using active programs. The system
+            assigns student numbers and generates temporary passwords.
+          </p>
+          <label for="account-import-file">
+            <span>Student-account CSV</span>
+            <input
+              id="account-import-file"
+              name="file"
+              type="file"
+              accept=".csv,text/csv"
+              required
+            />
+          </label>
+          <p class="account-form-help">
+            After a successful import, download the credentials file immediately
+            and distribute it only through the Guidance Office's approved secure
+            process. Temporary passwords are not shown again.
+          </p>
+        </fieldset>
+
+        <div class="account-form-actions">
+          <button class="btn btn-outline" type="button" id="account-import-cancel">
+            Cancel
+          </button>
+          <button class="btn btn-primary" type="submit" id="account-import-submit">
+            Import accounts
+          </button>
+        </div>
+      </form>
+    </dialog>
 
     <dialog
       class="account-dialog"
