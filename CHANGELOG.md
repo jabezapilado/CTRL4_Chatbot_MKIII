@@ -10,6 +10,9 @@ The format follows the principles of **Keep a Changelog**.
 
 ### Changed
 
+- Reworked the Case Details overview so the AI Summary appears lower in the
+  main case profile and the AI Recommendation uses a clearer highlighted callout
+  for immediate staff follow-up.
 - Simplified the Staff Action card and moved the **Mark Reviewed** control to
   the bottom-right below its Guidance Office notice.
 - Kept Staff Actions independent in the right-side panel, reduced the main

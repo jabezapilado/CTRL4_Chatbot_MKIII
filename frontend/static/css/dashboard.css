@@ -2003,7 +2003,8 @@ table.inquiry-table .table-empty-state {
   line-height: 1;
 }
 
-#view-settings [data-settings-collapsible][open]
+#view-settings
+  [data-settings-collapsible][open]
   .settings-collapsible-indicator::before {
   content: "−";
 }
@@ -2478,8 +2479,11 @@ table.inquiry-table .table-empty-state {
   font-weight: 700;
   padding: 7px 8px;
   cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease,
-    border-color 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .case-management-tab.active,
@@ -2876,11 +2880,21 @@ table.inquiry-table .table-empty-state {
   line-height: 1.25;
 }
 
-#view-case-details #case-recommendation {
+#view-case-details .case-recommendation-box {
+  background: var(--warning-bg);
+  border: 1px solid rgba(202, 122, 48, 0.35);
+  border-left: 4px solid var(--orange);
+  border-radius: var(--radius-md);
   color: var(--gray-700);
   font-size: 13px;
   line-height: 1.58;
   overflow-wrap: anywhere;
+  padding: 12px 14px;
+}
+
+#view-case-details .case-recommendation-box:empty::before {
+  content: "No AI recommendation available.";
+  color: var(--gray-500);
 }
 
 #view-case-details #case-recommendation + h3 {
@@ -3936,7 +3950,10 @@ table.inquiry-table .table-empty-state {
     max-width: none;
     min-height: 44px;
   }
-  #view-feedback .feedback-toolbar .inbox-toolbar-controls label[for="feedback-context-filter"] {
+  #view-feedback
+    .feedback-toolbar
+    .inbox-toolbar-controls
+    label[for="feedback-context-filter"] {
     grid-column: 1;
   }
   #view-feedback .feedback-toolbar #feedback-context-filter {
