@@ -1849,26 +1849,76 @@
                   </div>
                 </div>
 
+                <nav class="case-tab-list" aria-label="Case details sections" role="tablist">
+                  <button
+                    class="case-tab active"
+                    type="button"
+                    role="tab"
+                    id="case-tab-overview"
+                    aria-controls="case-tab-panel-overview"
+                    aria-selected="true"
+                    data-case-tab="overview"
+                  >
+                    Overview
+                  </button>
+                  <button
+                    class="case-tab"
+                    type="button"
+                    role="tab"
+                    id="case-tab-conversation"
+                    aria-controls="case-tab-panel-conversation"
+                    aria-selected="false"
+                    data-case-tab="conversation"
+                    hidden
+                  >
+                    Conversation
+                  </button>
+                  <button
+                    class="case-tab"
+                    type="button"
+                    role="tab"
+                    id="case-tab-records"
+                    aria-controls="case-tab-panel-records"
+                    aria-selected="false"
+                    data-case-tab="records"
+                    hidden
+                  >
+                    Case Records
+                  </button>
+                </nav>
+
                 <section
-                  class="case-transcript-card"
-                  id="case-transcript-card"
+                  class="case-tab-panel"
+                  id="case-tab-panel-conversation"
+                  role="tabpanel"
+                  aria-labelledby="case-tab-conversation"
+                  data-case-tab-panel="conversation"
                   hidden
                 >
-                  <div class="case-transcript-heading">
-                    <h3>Conversation Transcript</h3>
-                    <span>Staff only</span>
-                  </div>
-                  <p class="sub">
-                    Raw conversation retained for this flagged case so the
-                    Guidance Office can review the escalation context.
-                  </p>
-                  <div
-                    class="case-transcript-list"
-                    id="case-transcript-list"
-                    aria-live="polite"
-                  ></div>
+                  <section class="case-transcript-card" id="case-transcript-card" hidden>
+                    <div class="case-transcript-heading">
+                      <h3>Conversation Transcript</h3>
+                      <span>Staff only</span>
+                    </div>
+                    <p class="sub">
+                      Raw conversation retained for this flagged case so the
+                      Guidance Office can review the escalation context.
+                    </p>
+                    <div
+                      class="case-transcript-list"
+                      id="case-transcript-list"
+                      aria-live="polite"
+                    ></div>
+                  </section>
                 </section>
 
+                <section
+                  class="case-tab-panel"
+                  id="case-tab-panel-overview"
+                  role="tabpanel"
+                  aria-labelledby="case-tab-overview"
+                  data-case-tab-panel="overview"
+                >
                 <div class="case-info-panel">
                   <h3>AI Recommendation</h3>
                   <div id="case-recommendation"></div>
@@ -1901,16 +1951,22 @@
                     </div>
                   </div>
                 </div>
+                </section>
 
                 <section
-                  class="case-history-card"
-                  id="case-history-card"
+                  class="case-tab-panel"
+                  id="case-tab-panel-records"
+                  role="tabpanel"
+                  aria-labelledby="case-tab-records"
+                  data-case-tab-panel="records"
                   hidden
                 >
-                  <div class="case-history-heading">
-                    <h3>Reviewed Case History</h3>
-                  </div>
-                  <div class="case-history-list" id="case-history-list"></div>
+                  <section class="case-history-card" id="case-history-card" hidden>
+                    <div class="case-history-heading">
+                      <h3>Reviewed Case History</h3>
+                    </div>
+                    <div class="case-history-list" id="case-history-list"></div>
+                  </section>
                 </section>
               </div>
 
@@ -1965,6 +2021,7 @@
                 <div
                   class="case-confidentiality-card"
                   id="case-confidentiality-card"
+                  data-case-record-control
                   hidden
                 >
                   <h4>Case Confidentiality</h4>
@@ -2001,7 +2058,7 @@
                   </div>
                 </div>
 
-                <div class="referrals-card" id="case-referrals-card" hidden>
+                <div class="referrals-card" id="case-referrals-card" data-case-record-control hidden>
                   <h4>Internal Referrals</h4>
                   <div class="notes-sub">Guidance Office Records</div>
                   <div id="case-referrals-list" class="referrals-list"></div>
@@ -2048,6 +2105,7 @@
                 <div
                   class="interventions-card"
                   id="case-interventions-card"
+                  data-case-record-control
                   hidden
                 >
                   <h4>Confidential Interventions</h4>

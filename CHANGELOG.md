@@ -10,6 +10,9 @@ The format follows the principles of **Keep a Changelog**.
 
 ### Changed
 
+- Organized staff Case Details into Overview, Conversation, and Case Records
+  tabs. Counselor Notes and Staff Actions remain at the top-right for every
+  tab, while transcripts and other restricted records stay staff-only.
 - Added staff-only case-priority indicators and filters. Critical immediate
   safety escalations, high-priority warning-sign reviews, medium active
   conversations, and low routine summaries are derived from existing case

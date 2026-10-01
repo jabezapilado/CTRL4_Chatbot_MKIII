@@ -25,6 +25,7 @@ let flaggedCaseAnalytics = null;
 let reportsAnalytics = null;
 let dashboardLoadPromise = null;
 let reportsLoadPromise = null;
+let activeCaseDetailsTab = "overview";
 const DASHBOARD_TABLE_PAGE_SIZE = 10;
 const DASHBOARD_TABLE_PAGE_SIZES = Object.freeze({
   "inbox-tbody": 7,
@@ -4992,6 +4993,10 @@ async function openRoutineInboxDetails(conversation, detail) {
   referralsCard.hidden = true;
   interventionsCard.hidden = true;
   confidentialityCard.hidden = true;
+  [confidentialityCard, referralsCard, interventionsCard].forEach((card) => {
+    card.dataset.caseRecordAvailable = "false";
+  });
+  configureCaseDetailsTabs(false);
   await renderReviewedCaseHistory(detail.summary_id);
   switchView("case-details");
 }
@@ -5175,6 +5180,10 @@ async function openFlaggedConversationDetails(
     referralsCard.hidden = false;
     interventionsCard.hidden = false;
     confidentialityCard.hidden = false;
+    [confidentialityCard, referralsCard, interventionsCard].forEach((card) => {
+      card.dataset.caseRecordAvailable = "true";
+    });
+    configureCaseDetailsTabs(true);
     reviewButton.textContent = "Mark as Reviewed";
     reviewButton.disabled = detail.escalation_status === "reviewed";
     reviewButton.classList.toggle("disabled", reviewButton.disabled);
@@ -5972,6 +5981,37 @@ async function loadBackendData() {
   }
 }
 
+function setCaseDetailsTab(tabName) {
+  activeCaseDetailsTab = tabName;
+  document.querySelectorAll("[data-case-tab]").forEach((tab) => {
+    const selected = tab.dataset.caseTab === tabName;
+    tab.classList.toggle("active", selected);
+    tab.setAttribute("aria-selected", String(selected));
+    tab.tabIndex = selected ? 0 : -1;
+  });
+  document.querySelectorAll("[data-case-tab-panel]").forEach((panel) => {
+    panel.hidden = panel.dataset.caseTabPanel !== tabName;
+  });
+  document.querySelectorAll("[data-case-record-control]").forEach((card) => {
+    card.hidden =
+      tabName !== "records" || card.dataset.caseRecordAvailable !== "true";
+  });
+}
+
+function configureCaseDetailsTabs(isFlagged) {
+  document.querySelectorAll("[data-case-tab]").forEach((tab) => {
+    const requiresFlaggedCase = tab.dataset.caseTab !== "overview";
+    tab.hidden = requiresFlaggedCase && !isFlagged;
+  });
+  setCaseDetailsTab("overview");
+}
+
+function bindCaseDetailsTabs() {
+  document.querySelectorAll("[data-case-tab]").forEach((tab) => {
+    tab.addEventListener("click", () => setCaseDetailsTab(tab.dataset.caseTab));
+  });
+}
+
 function logout() {
   let redirected = false;
   const redirectToLogin = () => {
@@ -6001,6 +6041,7 @@ bindCounselorProfile();
 bindInboxControls();
 bindFeedbackControls();
 bindFlaggedControls();
+bindCaseDetailsTabs();
 bindFaqManagement();
 bindAppointmentSearch();
 bindAppointmentCalendar();
