@@ -10,12 +10,12 @@ let staffInboxItems = [];
 let inboxLoadState = "loading";
 let flaggedConversations = [];
 let flaggedConversationsLoaded = false;
-let inboxSort = { key: "student", direction: "asc" };
+let inboxSort = { key: "priority", direction: "desc" };
 let chatbotFeedback = [];
 let chatbotFeedbackLoadState = "loading";
 let chatbotFeedbackInsights = null;
 let feedbackSort = { key: "student", direction: "asc" };
-let flaggedSort = { key: "student", direction: "asc" };
+let flaggedSort = { key: "priority", direction: "desc" };
 let appointmentsLoaded = false;
 let appointmentAnalytics = null;
 let chatbotAnalytics = null;
@@ -64,6 +64,7 @@ function mapInboxItem(row) {
     category: row.primary_concern || "General inquiry",
     emotion: row.emotion_results || "Unavailable",
     flagged: Boolean(row.flagged_status),
+    priority: row.case_priority || "low",
     status: row.review_status || "routine",
     summary: row.summary_preview || "No AI summary preview is available.",
     hasReferral: Boolean(row.has_referral),
@@ -3378,6 +3379,8 @@ function inboxItemsForCurrentFilter() {
       filter === "all" ||
       (filter === "flagged" && item.flagged) ||
       (filter === "routine" && !item.flagged) ||
+      (filter.startsWith("priority-") &&
+        item.priority === filter.replace("priority-", "")) ||
       item.status === filter;
     if (!matchesFilter) return false;
     if (!query) return true;
@@ -3400,12 +3403,44 @@ function inboxSortValue(item, key) {
   const values = {
     student: `${item.studentNumber} ${item.studentName}`,
     program: item.program,
+    priority: casePriorityRank(item.priority),
     category: item.category,
     summary: item.summary,
     status: item.status,
     createdAt: item.createdAt?.getTime() ?? Number.MAX_SAFE_INTEGER,
   };
   return values[key] ?? "";
+}
+
+function casePriorityRank(priority) {
+  return {
+    critical: 4,
+    high: 3,
+    medium: 2,
+    low: 1,
+  }[String(priority || "low").toLowerCase()] || 0;
+}
+
+function createCasePriorityBadge(priority) {
+  const normalized = String(priority || "low").toLowerCase();
+  const presentation = {
+    critical: { label: "Critical", badgeClass: "negative" },
+    high: { label: "High", badgeClass: "pending" },
+    medium: { label: "Medium", badgeClass: "pending" },
+    low: { label: "Low", badgeClass: "neutral" },
+  }[normalized] || { label: "Low", badgeClass: "neutral" };
+  const badge = document.createElement("span");
+  badge.className = `badge ${presentation.badgeClass}`;
+  badge.textContent = presentation.label;
+  return badge;
+}
+
+function applyCasePriority(detail) {
+  const element = document.getElementById("case-priority");
+  if (!element) return;
+  const badge = createCasePriorityBadge(detail.case_priority);
+  element.className = badge.className;
+  element.textContent = badge.textContent;
 }
 
 function createInboxStatusBadge(item) {
@@ -3439,14 +3474,14 @@ function renderInquiryTable() {
   syncTableSortHeaders("inbox-table", inboxSort);
   if (inboxLoadState === "loading") {
     clearDashboardTablePagination("inbox-tbody");
-    appendTableEmptyState(tbody, 7, "Loading current student summary items...");
+    appendTableEmptyState(tbody, 8, "Loading current student summary items...");
     return;
   }
   if (inboxLoadState === "error") {
     clearDashboardTablePagination("inbox-tbody");
     appendTableEmptyState(
       tbody,
-      7,
+      8,
       "Inbox items are unavailable. Retry to load persisted summaries.",
     );
     return;
@@ -3457,7 +3492,7 @@ function renderInquiryTable() {
     clearDashboardTablePagination("inbox-tbody");
     appendTableEmptyState(
       tbody,
-      7,
+      8,
       staffInboxItems.length
         ? "No current student summary items match this filter."
         : "No active or finalized student summary items are available yet.",
@@ -3480,6 +3515,10 @@ function renderInquiryTable() {
     student.append(studentName, studentNumber);
     row.appendChild(student);
     appendTableCell(row, item.program, "Program");
+    const priority = document.createElement("td");
+    priority.dataset.label = "Priority";
+    priority.appendChild(createCasePriorityBadge(item.priority));
+    row.appendChild(priority);
     appendTableCell(row, item.category, "Concern");
     const preview = document.createElement("td");
     const previewText = document.createElement("div");
@@ -3722,6 +3761,7 @@ function appendTableCell(row, value, label = "") {
 function flaggedSortValue(conversation, key) {
   const values = {
     student: `${conversation.studentNumber} ${conversation.studentName}`,
+    priority: casePriorityRank(conversation.priority),
     summary: conversation.summary,
     category: conversation.category,
     status: conversation.status,
@@ -3740,7 +3780,9 @@ function flaggedItemsForCurrentFilter() {
   const items = flaggedConversations.filter((conversation) => {
     const matchesFilter =
       filter === "all" ||
-      conversation.status === filter;
+      conversation.status === filter ||
+      (filter.startsWith("priority-") &&
+        conversation.priority === filter.replace("priority-", ""));
     const searchable = [
       conversation.studentName,
       conversation.studentNumber,
@@ -3790,7 +3832,7 @@ function renderFlaggedConversations() {
     clearDashboardTablePagination("flagged-tbody");
     appendTableEmptyState(
       tbody,
-      6,
+      7,
       "Flagged cases are unavailable. Retry to load authorized cases.",
     );
     setFlaggedState("Flagged cases are unavailable. Retry to load authorized cases.");
@@ -3803,7 +3845,7 @@ function renderFlaggedConversations() {
     clearDashboardTablePagination("flagged-tbody");
     appendTableEmptyState(
       tbody,
-      6,
+      7,
       flaggedConversations.length
         ? "No flagged conversations match this filter."
         : "No flagged cases are available in your authorized programs.",
@@ -3832,6 +3874,11 @@ function renderFlaggedConversations() {
     studentNumber.textContent = conversation.studentNumber || "—";
     student.append(studentName, studentNumber);
     row.appendChild(student);
+
+    const priority = document.createElement("td");
+    priority.dataset.label = "Priority";
+    priority.appendChild(createCasePriorityBadge(conversation.priority));
+    row.appendChild(priority);
 
     const summary = document.createElement("td");
     const summaryText = document.createElement("div");
@@ -4908,10 +4955,11 @@ async function openRoutineInboxDetails(conversation, detail) {
   document.getElementById("case-message").textContent = detail.summary;
   document.getElementById("case-category").textContent =
     detail.primary_concern || "General inquiry";
-  document.getElementById("case-emotion").textContent = capitalize(
-    detail.emotion_results || "Unavailable",
-  );
-  applySafetyRisk(detail);
+    document.getElementById("case-emotion").textContent = capitalize(
+      detail.emotion_results || "Unavailable",
+    );
+    applySafetyRisk(detail);
+    applyCasePriority(detail);
   document.getElementById("case-time").textContent = detail.created_at
     ? new Date(detail.created_at).toLocaleString()
     : "Unavailable";
@@ -5088,6 +5136,7 @@ async function openFlaggedConversationDetails(
       displayCaseEmotion(detail);
     const safetyRisk = safetyRiskPresentation(detail);
     applySafetyRisk(detail);
+    applyCasePriority(detail);
     document.getElementById("case-time").textContent = detail.created_at
       ? new Date(detail.created_at).toLocaleString()
       : "Unavailable";

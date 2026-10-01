@@ -103,7 +103,7 @@ class DashboardDataIntegrityContractTests(unittest.TestCase):
         self.assertNotIn("response_text", template)
         self.assertNotIn("student_message", template)
 
-    def test_flagged_and_feedback_tables_offer_scoped_filters_and_ascending_sorts(self) -> None:
+    def test_flagged_and_feedback_tables_offer_scoped_filters_and_priority_sorts(self) -> None:
         dashboard = _read("frontend/static/js/dashboard.js")
         template = _read("frontend/templates/dashboard.html")
         stylesheet = _read("frontend/static/css/dashboard.css")
@@ -116,12 +116,15 @@ class DashboardDataIntegrityContractTests(unittest.TestCase):
         self.assertIn('id="flagged-reviewed-count"', template)
         self.assertIn('value="pending">Pending review', template)
         self.assertIn('value="reviewed">Reviewed', template)
+        self.assertIn('value="priority-critical">Critical priority', template)
+        self.assertIn('data-sort-key="priority"', template)
         self.assertIn('id="feedback-table"', template)
         self.assertIn('id="inbox-table"', template)
         self.assertIn('data-sort-key="student"', template)
-        self.assertIn("let inboxSort = { key: \"student\", direction: \"asc\" };", dashboard)
+        self.assertIn("let inboxSort = { key: \"priority\", direction: \"desc\" };", dashboard)
         self.assertIn("let feedbackSort = { key: \"student\", direction: \"asc\" };", dashboard)
-        self.assertIn("let flaggedSort = { key: \"student\", direction: \"asc\" };", dashboard)
+        self.assertIn("let flaggedSort = { key: \"priority\", direction: \"desc\" };", dashboard)
+        self.assertIn("function createCasePriorityBadge(priority)", dashboard)
         self.assertIn("function flaggedItemsForCurrentFilter()", dashboard)
         self.assertIn("function renderFlaggedInsights()", dashboard)
         self.assertIn("/api/flagged-conversations", dashboard)

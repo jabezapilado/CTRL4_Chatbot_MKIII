@@ -131,6 +131,15 @@ button.notification-item:disabled {
   color: var(--text-muted, #6b7280);
 }
 
+.notification-item--critical {
+  border-left: 4px solid var(--danger-text, #b42318);
+  background: #fff1f0;
+}
+
+.notification-item--critical:not(.is-read):hover {
+  background: #ffe4e1;
+}
+
 .notification-item h3,
 .notification-item p {
   margin: 0;

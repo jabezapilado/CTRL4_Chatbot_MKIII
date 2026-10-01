@@ -33,14 +33,22 @@ it does not book, move, resize, or link replacement appointments.
 
 ## Conversation and case management
 
-The dashboard Inbox shows one current privacy-safe summary item per
-student/case priority. Flagged Cases shows active pending flagged cases, and
+The dashboard Inbox shows one current privacy-safe summary item per student.
+Flagged Cases shows active pending flagged cases, and
 Reviewed Case History retains authorized reviewed records. Staff views do not
 expose raw chat transcripts for routine conversations. In a flagged case's
 Case Details, the **Conversation Transcript** panel contains the server-captured
 student and CTRL4 messages so you can verify the escalation context. This panel
 is limited to your authorized programs and must be used only for the Guidance
 Office review. Read Detected Emotion and Safety Risk as separate fields.
+
+The staff-only **Priority** indicator is derived from existing case state and
+cannot be changed by students: **Critical** is an immediate safety escalation,
+**High** is a flagged wellbeing warning-sign review, **Medium** is an active
+unflagged conversation, and **Low** is a routine summary. Inbox and Flagged
+Cases default-sort by priority and offer priority filters. Critical alerts in
+Notifications are visibly marked and state that immediate Guidance Office
+review is required.
 
 The Inbox and Flagged Cases tables show 7 records per page because their
 summary rows can be longer. Chatbot Feedback, analytics, and report tables

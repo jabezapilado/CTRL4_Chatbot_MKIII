@@ -992,22 +992,22 @@
 }
 
 table.inquiry-table.flagged-table {
-  min-width: 900px;
+  min-width: 980px;
 }
 
 .flagged-table th:nth-child(1),
 .flagged-table td:nth-child(1) {
-  width: 18%;
+  width: 15%;
 }
 
 .flagged-table th:nth-child(2),
 .flagged-table td:nth-child(2) {
-  width: 42%;
+  width: 10%;
 }
 
 .flagged-table th:nth-child(3),
 .flagged-table td:nth-child(3) {
-  width: 14%;
+  width: 37%;
 }
 
 .flagged-table th:nth-child(4),
@@ -1017,12 +1017,18 @@ table.inquiry-table.flagged-table {
 
 .flagged-table th:nth-child(5),
 .flagged-table td:nth-child(5) {
-  width: 10%;
+  width: 11%;
   white-space: nowrap;
 }
 
 .flagged-table th:nth-child(6),
 .flagged-table td:nth-child(6) {
+  width: 11%;
+  white-space: nowrap;
+}
+
+.flagged-table th:nth-child(7),
+.flagged-table td:nth-child(7) {
   width: 4%;
   padding-right: 22px;
   text-align: right;
@@ -1157,39 +1163,39 @@ table.inquiry-table.inbox-table {
 
 .inbox-table th:nth-child(1),
 .inbox-table td:nth-child(1) {
-  width: 15%;
+  width: 13%;
 }
 
 .inbox-table th:nth-child(2),
 .inbox-table td:nth-child(2) {
-  width: 18%;
+  width: 14%;
 }
 
 .inbox-table th:nth-child(3),
 .inbox-table td:nth-child(3) {
-  width: 10%;
+  width: 9%;
 }
 
 .inbox-table th:nth-child(4),
 .inbox-table td:nth-child(4) {
-  width: 24%;
+  width: 10%;
 }
 
 .inbox-table th:nth-child(5),
 .inbox-table td:nth-child(5) {
-  width: 10%;
+  width: 23%;
 }
 
 .inbox-table th:nth-child(6),
 .inbox-table td:nth-child(6) {
-  width: 16%;
+  width: 10%;
 }
 
-.inbox-table th:nth-child(6) {
+.inbox-table th:nth-child(7) {
   white-space: nowrap;
 }
 
-.inbox-table td:nth-child(6) {
+.inbox-table td:nth-child(7) {
   line-height: 1.35;
   overflow-wrap: anywhere;
   white-space: normal;
@@ -1197,7 +1203,12 @@ table.inquiry-table.inbox-table {
 
 .inbox-table th:nth-child(7),
 .inbox-table td:nth-child(7) {
-  width: 7%;
+  width: 15%;
+}
+
+.inbox-table th:nth-child(8),
+.inbox-table td:nth-child(8) {
+  width: 6%;
   overflow: hidden;
   padding-right: 22px;
   text-align: right;
@@ -1212,8 +1223,8 @@ table.inquiry-table.inbox-table {
   padding: 10px 16px;
 }
 
-.inbox-table th:nth-child(7),
-.inbox-table td:nth-child(7) {
+.inbox-table th:nth-child(8),
+.inbox-table td:nth-child(8) {
   padding-right: 22px;
 }
 .inbox-table thead th {
@@ -2573,7 +2584,7 @@ table.inquiry-table .table-empty-state {
 }
 
 #view-case-details .case-meta-grid {
-  grid-template-columns: repeat(5, minmax(130px, 1fr));
+  grid-template-columns: repeat(3, minmax(130px, 1fr));
   margin-top: 16px;
 }
 
@@ -3993,7 +4004,7 @@ table.inquiry-table .table-empty-state {
     border-bottom: 0;
   }
 
-  .inbox-table .inbox-record td:nth-child(7) {
+  .inbox-table .inbox-record td:nth-child(8) {
     padding-right: 12px;
     text-align: left;
   }
@@ -4053,8 +4064,8 @@ table.inquiry-table .table-empty-state {
   .flagged-table td:nth-child(5) {
     white-space: normal;
   }
-  .flagged-table th:nth-child(6),
-  .flagged-table td:nth-child(6) {
+  .flagged-table th:nth-child(7),
+  .flagged-table td:nth-child(7) {
     text-align: left;
   }
   .appointment-availability-window {

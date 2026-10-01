@@ -97,8 +97,8 @@ Filipino or Taglish emotion model.
 - Appointment lifecycle, counselor notes, and read-only calendar.
 - Flagged-case review, case notes, referrals, interventions, and
   confidentiality handling.
-- Summary-based Inbox, active Flagged Cases, staff-only retained transcripts
-  for flagged-case review, privacy-safe Case Details
+- Summary-based Inbox, priority-sorted active Flagged Cases, staff-only
+  retained transcripts for flagged-case review, privacy-safe Case Details
   (including separate Detected Emotion and Safety Risk), and Reviewed Case
   History.
 - Immediate Inbox visibility for active conversations, with one record updated

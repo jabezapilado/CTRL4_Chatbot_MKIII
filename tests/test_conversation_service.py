@@ -66,6 +66,27 @@ class ConversationServiceTests(unittest.TestCase):
         self.assertIn("pending_escalations.status = 'pending'", source)
         self.assertIn("selected_summary_id", source)
 
+    def test_staff_case_priority_is_derived_from_existing_safety_state(self):
+        critical = self._inbox_row(
+            21,
+            "2026-00021",
+            flagged_status=True,
+            escalation_reason="AI safety escalation.",
+        )
+        high = self._inbox_row(
+            22,
+            "2026-00022",
+            flagged_status=True,
+            escalation_reason="Warning sign requires Guidance Office review.",
+        )
+        active = self._inbox_row(23, "2026-00023", conversation_type="active")
+        routine = self._inbox_row(24, "2026-00024")
+
+        self.assertEqual(conversation_service._case_priority(critical), "critical")
+        self.assertEqual(conversation_service._case_priority(high), "high")
+        self.assertEqual(conversation_service._case_priority(active), "medium")
+        self.assertEqual(conversation_service._case_priority(routine), "low")
+
     def test_inbox_query_keeps_a_reviewed_case_until_a_later_summary_exists(self):
         source = (ROOT / "backend/server/db.py").read_text(encoding="utf-8")
         self.assertIn("reviewed_escalations.status = 'reviewed'", source)

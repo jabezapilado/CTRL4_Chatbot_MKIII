@@ -57,9 +57,14 @@ ESCALATION_PENDING: Final[str] = "pending"
 INQUIRY_TYPE_AI_CHAT: Final[str] = "ai_chat"
 HIGH_RISK_NOTIFICATION_TITLE: Final[str] = "High-risk student conversation detected."
 HIGH_RISK_NOTIFICATION_MESSAGE: Final[str] = (
-    "High-risk student conversation detected. Immediate Guidance Office review is required."
+    "Critical priority: a high-risk student conversation requires immediate "
+    "Guidance Office review."
 )
 ACTIVE_CONVERSATION_TYPE: Final[str] = "active"
+CASE_PRIORITY_CRITICAL: Final[str] = "critical"
+CASE_PRIORITY_HIGH: Final[str] = "high"
+CASE_PRIORITY_MEDIUM: Final[str] = "medium"
+CASE_PRIORITY_LOW: Final[str] = "low"
 def _parse_analytics_filter_date(value: object, field_name: str) -> date | None:
     if value is None or not str(value).strip():
         return None
@@ -295,6 +300,7 @@ _STAFF_INBOX_FIELDS: Final[tuple[str, ...]] = (
     "primary_concern",
     "emotion_results",
     "flagged_status",
+    "case_priority",
     "review_status",
     "created_at",
     "summary_preview",
@@ -385,6 +391,21 @@ def _summary_preview(value: object) -> str:
     return text[:240] + ("..." if len(text) > 240 else "")
 
 
+def _case_priority(row: dict) -> str:
+    """Derive staff-only urgency from persisted safety and review state."""
+    if bool(row.get("flagged_status")):
+        safety_metadata = " ".join(
+            str(row.get(key) or "")
+            for key in ("escalation_reason", "primary_concern")
+        ).lower()
+        if "ai safety escalation" in safety_metadata:
+            return CASE_PRIORITY_CRITICAL
+        return CASE_PRIORITY_HIGH
+    if str(row.get("conversation_type") or "").strip().lower() == ACTIVE_CONVERSATION_TYPE:
+        return CASE_PRIORITY_MEDIUM
+    return CASE_PRIORITY_LOW
+
+
 def _project_staff_inbox_row(row: dict, *, detail: bool = False) -> dict:
     projected = {
         "summary_id": row.get("summary_id"),
@@ -395,6 +416,7 @@ def _project_staff_inbox_row(row: dict, *, detail: bool = False) -> dict:
         "conversation_type": row.get("conversation_type"),
         "emotion_results": row.get("emotion_results"),
         "flagged_status": bool(row.get("flagged_status")),
+        "case_priority": _case_priority(row),
         "review_status": _inbox_review_status(row),
         "created_at": row.get("created_at"),
         "summary_preview": _summary_preview(row.get("summary")),

@@ -10,6 +10,11 @@ The format follows the principles of **Keep a Changelog**.
 
 ### Changed
 
+- Added staff-only case-priority indicators and filters. Critical immediate
+  safety escalations, high-priority warning-sign reviews, medium active
+  conversations, and low routine summaries are derived from existing case
+  state; Critical staff notifications are visually distinguished and state the
+  required immediate review.
 - Moved the Counselor Notes card to the top of the Case Details right-side
   staff panel so counselors can record follow-up, referral, or action notes
   before taking other case actions.

@@ -181,7 +181,7 @@ privacy-projected; student APIs do not receive these records.
 
 | Method | Path | Request | Success / important errors |
 | --- | --- | --- | --- |
-| GET | `/api/staff/inbox` | None | 200 current authorized student summary items, one latest item per student |
+| GET | `/api/staff/inbox` | None | 200 current authorized student summary items, one latest item per student, including staff-only derived `case_priority` |
 | GET | `/api/staff/inbox/<summary_id>` | None | 200 privacy-projected summary detail; 404 outside staff program scope or missing |
 | GET | `/api/staff/inbox/<summary_id>/history` | None | 200 reviewed flagged-case history for the same authorized student; 404 outside staff program scope or missing |
 | GET | `/api/flagged-conversations/<summary_id>/transcript` | None | 200 server-owned raw transcript for the flagged case; 404 outside staff program scope, non-flagged, or missing; never available to students or administrators |
@@ -206,7 +206,9 @@ privacy-projected; student APIs do not receive these records.
 | PATCH | `/api/flagged-conversations/<summary_id>/interventions/<intervention_id>/progress` | `progress_status` | 200; 400/404 |
 | PATCH | `/api/flagged-conversations/<summary_id>/interventions/<intervention_id>/outcome` | `outcome` | 200; 400/404 |
 
-Inbox and ordinary case endpoints return privacy-projected summaries. The
+Inbox and ordinary case endpoints return privacy-projected summaries. Their
+staff-only `case_priority` is derived from existing escalation, flagged, and
+active-conversation state; it is not student-visible or client-editable. The
 flagged-case transcript endpoint is the sole staff-only raw-transcript view.
 Active Flagged Cases are pending cases; reviewed records are available through
 the authorized inbox-history flow. A staff member outside the student's

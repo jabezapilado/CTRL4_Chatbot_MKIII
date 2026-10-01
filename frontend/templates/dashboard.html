@@ -175,6 +175,10 @@
                     <option value="active">Active</option>
                     <option value="pending">Pending review</option>
                     <option value="reviewed">Reviewed</option>
+                    <option value="priority-critical">Critical priority</option>
+                    <option value="priority-high">High priority</option>
+                    <option value="priority-medium">Medium priority</option>
+                    <option value="priority-low">Low priority</option>
                   </select>
                   <button
                     id="inbox-retry"
@@ -205,8 +209,9 @@
                 <table class="inquiry-table inbox-table" id="inbox-table">
                   <thead>
                     <tr>
-                      <th aria-sort="ascending"><button class="table-sort active" type="button" data-sort-key="student">Student <span class="table-sort-indicator" aria-hidden="true">↑</span></button></th>
+                      <th aria-sort="none"><button class="table-sort" type="button" data-sort-key="student">Student <span class="table-sort-indicator" aria-hidden="true"></span></button></th>
                       <th aria-sort="none"><button class="table-sort" type="button" data-sort-key="program">Program <span class="table-sort-indicator" aria-hidden="true"></span></button></th>
+                      <th aria-sort="descending"><button class="table-sort active" type="button" data-sort-key="priority">Priority <span class="table-sort-indicator" aria-hidden="true">↓</span></button></th>
                       <th aria-sort="none"><button class="table-sort" type="button" data-sort-key="category">Concern <span class="table-sort-indicator" aria-hidden="true"></span></button></th>
                       <th aria-sort="none"><button class="table-sort" type="button" data-sort-key="summary">Summary Preview <span class="table-sort-indicator" aria-hidden="true"></span></button></th>
                       <th aria-sort="none"><button class="table-sort" type="button" data-sort-key="status">Status <span class="table-sort-indicator" aria-hidden="true"></span></button></th>
@@ -253,6 +258,8 @@
                     <option value="all">All flagged cases</option>
                     <option value="pending">Pending review</option>
                     <option value="reviewed">Reviewed</option>
+                    <option value="priority-critical">Critical priority</option>
+                    <option value="priority-high">High priority</option>
                   </select>
                   <button
                     id="flagged-retry"
@@ -278,7 +285,8 @@
                 <table class="inquiry-table flagged-table" id="flagged-table">
                   <thead>
                     <tr>
-                      <th aria-sort="ascending"><button class="table-sort active" type="button" data-sort-key="student">Student <span class="table-sort-indicator" aria-hidden="true">↑</span></button></th>
+                      <th aria-sort="none"><button class="table-sort" type="button" data-sort-key="student">Student <span class="table-sort-indicator" aria-hidden="true"></span></button></th>
+                      <th aria-sort="descending"><button class="table-sort active" type="button" data-sort-key="priority">Priority <span class="table-sort-indicator" aria-hidden="true">↓</span></button></th>
                       <th aria-sort="none"><button class="table-sort" type="button" data-sort-key="summary">Message <span class="table-sort-indicator" aria-hidden="true"></span></button></th>
                       <th aria-sort="none"><button class="table-sort" type="button" data-sort-key="category">Category <span class="table-sort-indicator" aria-hidden="true"></span></button></th>
                       <th aria-sort="none"><button class="table-sort" type="button" data-sort-key="status">Status <span class="table-sort-indicator" aria-hidden="true"></span></button></th>
@@ -1820,6 +1828,12 @@
                         <span class="badge neutral" id="case-safety-risk"
                           >No immediate safety concern</span
                         >
+                      </div>
+                    </div>
+                    <div class="case-meta-cell">
+                      <div class="case-meta-label">Priority</div>
+                      <div class="case-meta-value">
+                        <span class="badge neutral" id="case-priority">Low</span>
                       </div>
                     </div>
                     <div class="case-meta-cell">

@@ -118,6 +118,12 @@
       const item = document.createElement("button");
       item.type = "button";
       item.className = "notification-item";
+      if (
+        String(notification.type || "").trim().toLowerCase() ===
+        "high_risk_conversation"
+      ) {
+        item.classList.add("notification-item--critical");
+      }
       if (notificationIsRead) {
         item.classList.add("is-read");
       }

@@ -177,23 +177,23 @@ class FrontendLayoutContractTests(unittest.TestCase):
         self.assertIn("max-height: clamp(260px, 36dvh, 460px);", stylesheet)
         self.assertIn(".inbox-table {", stylesheet)
         self.assertIn("table-layout: fixed;", stylesheet)
-        self.assertIn(".inbox-table th:nth-child(4)", stylesheet)
-        self.assertIn("width: 24%;", stylesheet)
+        self.assertIn(".inbox-table th:nth-child(5)", stylesheet)
+        self.assertIn("width: 23%;", stylesheet)
         self.assertRegex(
             stylesheet,
-            r"\.inbox-table th:nth-child\(6\),\s*"
-            r"\.inbox-table td:nth-child\(6\) \{\s*width: 16%;",
+            r"\.inbox-table th:nth-child\(7\),\s*"
+            r"\.inbox-table td:nth-child\(7\) \{\s*width: 15%;",
         )
         self.assertRegex(
             stylesheet,
-            r"\.inbox-table td:nth-child\(6\) \{[^}]*"
+            r"\.inbox-table td:nth-child\(7\) \{[^}]*"
             r"overflow-wrap: anywhere;[^}]*white-space: normal;",
         )
         self.assertRegex(
             stylesheet,
-            r"\.inbox-table th:nth-child\(7\),\s*"
-            r"\.inbox-table td:nth-child\(7\) \{\s*"
-            r"width: 7%;\s*overflow: hidden;",
+            r"\.inbox-table th:nth-child\(8\),\s*"
+            r"\.inbox-table td:nth-child\(8\) \{\s*"
+            r"width: 6%;\s*overflow: hidden;",
         )
         self.assertIn("white-space: nowrap;", stylesheet)
         self.assertIn("padding-right: 22px;", stylesheet)
@@ -423,9 +423,9 @@ class FrontendLayoutContractTests(unittest.TestCase):
         self.assertIn("#view-flagged .flagged-panel > .sub", stylesheet)
         self.assertIn(".flagged-table {", stylesheet)
         self.assertIn("table-layout: fixed;", stylesheet)
-        self.assertIn("min-width: 900px;", stylesheet)
+        self.assertIn("min-width: 980px;", stylesheet)
         self.assertIn(".flagged-table th:nth-child(2)", stylesheet)
-        self.assertIn("width: 42%;", stylesheet)
+        self.assertIn("width: 10%;", stylesheet)
         self.assertIn(".table-sort", stylesheet)
         self.assertIn(".flagged-stat-grid", stylesheet)
         self.assertIn(".flagged-summary-preview", stylesheet)
