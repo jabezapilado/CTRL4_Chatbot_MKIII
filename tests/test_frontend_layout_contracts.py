@@ -491,7 +491,9 @@ class FrontendLayoutContractTests(unittest.TestCase):
             dashboard,
         )
         chat = _read("frontend/static/js/chat.js")
-        self.assertIn("For your safety, your conversation has been referred", chat)
+        safety = _read("backend/server/services/safety_service.py")
+        self.assertNotIn("appendEscalationNotice", chat)
+        self.assertIn("Your conversation has been referred to the Guidance Office", safety)
 
     def test_case_details_separates_persisted_emotion_from_safety_risk(self) -> None:
         dashboard = _read("frontend/static/js/dashboard.js")

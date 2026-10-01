@@ -10,6 +10,12 @@ The format follows the principles of **Keep a Changelog**.
 
 ### Changed
 
+- Consolidated crisis escalation messaging into the chatbot response so the
+  student sees one clear reply that confirms counselor referral and follow-up;
+  the duplicate escalation banner is no longer rendered separately.
+- Added accessible tab semantics to the Privacy, Referrals, and Interventions
+  Case Records controls, including selected-state and panel relationships while
+  preserving Staff Action as the final independent card.
 - Reworked the Case Details overview so the AI Summary appears lower in the
   main case profile and the AI Recommendation uses a clearer highlighted callout
   for immediate staff follow-up.

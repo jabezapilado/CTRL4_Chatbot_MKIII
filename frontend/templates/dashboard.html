@@ -2190,7 +2190,10 @@
                 >
                   <div class="case-info-panel">
                     <h3>AI Recommendation</h3>
-                    <div class="case-recommendation-box" id="case-recommendation"></div>
+                    <div
+                      class="case-recommendation-box"
+                      id="case-recommendation"
+                    ></div>
                     <h3>Conversation Statistics</h3>
 
                     <div class="conversation-insights">
@@ -2257,11 +2260,16 @@
                 <nav
                   class="case-management-tabs"
                   aria-label="Case records tools"
+                  role="tablist"
                   hidden
                 >
                   <button
                     class="case-management-tab active"
                     type="button"
+                    id="case-management-tab-confidentiality"
+                    role="tab"
+                    aria-selected="true"
+                    aria-controls="case-confidentiality-card"
                     data-case-management-tab="confidentiality"
                   >
                     Privacy
@@ -2269,6 +2277,10 @@
                   <button
                     class="case-management-tab"
                     type="button"
+                    id="case-management-tab-referrals"
+                    role="tab"
+                    aria-selected="false"
+                    aria-controls="case-referrals-card"
                     data-case-management-tab="referrals"
                   >
                     Referrals
@@ -2276,6 +2288,10 @@
                   <button
                     class="case-management-tab"
                     type="button"
+                    id="case-management-tab-interventions"
+                    role="tab"
+                    aria-selected="false"
+                    aria-controls="case-interventions-card"
                     data-case-management-tab="interventions"
                   >
                     Interventions
@@ -2285,6 +2301,8 @@
                 <div
                   class="case-confidentiality-card"
                   id="case-confidentiality-card"
+                  role="tabpanel"
+                  aria-labelledby="case-management-tab-confidentiality"
                   data-case-record-control
                   data-case-management-panel="confidentiality"
                   hidden
@@ -2326,6 +2344,8 @@
                 <div
                   class="referrals-card"
                   id="case-referrals-card"
+                  role="tabpanel"
+                  aria-labelledby="case-management-tab-referrals"
                   data-case-record-control
                   data-case-management-panel="referrals"
                   hidden
@@ -2376,6 +2396,8 @@
                 <div
                   class="interventions-card"
                   id="case-interventions-card"
+                  role="tabpanel"
+                  aria-labelledby="case-management-tab-interventions"
                   data-case-record-control
                   data-case-management-panel="interventions"
                   hidden

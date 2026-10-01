@@ -2774,25 +2774,26 @@ function bindInboxControls() {
       resetDashboardTablePage("inbox-tbody");
       renderInquiryTable();
     });
-  document
-    .getElementById("inbox-filter")
-    ?.addEventListener("change", () => {
-      resetDashboardTablePage("inbox-tbody");
-      renderInquiryTable();
-    });
-  bindTableSortControls("inbox-table", inboxSort, renderInquiryTable, "inbox-tbody");
+  document.getElementById("inbox-filter")?.addEventListener("change", () => {
+    resetDashboardTablePage("inbox-tbody");
+    renderInquiryTable();
+  });
+  bindTableSortControls(
+    "inbox-table",
+    inboxSort,
+    renderInquiryTable,
+    "inbox-tbody",
+  );
   document.getElementById("inbox-retry")?.addEventListener("click", () => {
     void loadBackendData();
   });
 }
 
 function bindFeedbackControls() {
-  document
-    .getElementById("feedback-filter")
-    ?.addEventListener("change", () => {
-      resetDashboardTablePage("feedback-tbody");
-      renderChatbotFeedback();
-    });
+  document.getElementById("feedback-filter")?.addEventListener("change", () => {
+    resetDashboardTablePage("feedback-tbody");
+    renderChatbotFeedback();
+  });
   document
     .getElementById("feedback-context-filter")
     ?.addEventListener("change", () => {
@@ -2805,26 +2806,34 @@ function bindFeedbackControls() {
       resetDashboardTablePage("feedback-tbody");
       renderChatbotFeedback();
     });
-  bindTableSortControls("feedback-table", feedbackSort, renderChatbotFeedback, "feedback-tbody");
+  bindTableSortControls(
+    "feedback-table",
+    feedbackSort,
+    renderChatbotFeedback,
+    "feedback-tbody",
+  );
   document.getElementById("feedback-retry")?.addEventListener("click", () => {
     void loadBackendData();
   });
 }
 
 function bindFlaggedControls() {
-  document
-    .getElementById("flagged-filter")
-    ?.addEventListener("change", () => {
-      resetDashboardTablePage("flagged-tbody");
-      renderFlaggedConversations();
-    });
+  document.getElementById("flagged-filter")?.addEventListener("change", () => {
+    resetDashboardTablePage("flagged-tbody");
+    renderFlaggedConversations();
+  });
   document
     .getElementById("flagged-search-input")
     ?.addEventListener("input", () => {
       resetDashboardTablePage("flagged-tbody");
       renderFlaggedConversations();
     });
-  bindTableSortControls("flagged-table", flaggedSort, renderFlaggedConversations, "flagged-tbody");
+  bindTableSortControls(
+    "flagged-table",
+    flaggedSort,
+    renderFlaggedConversations,
+    "flagged-tbody",
+  );
   document.getElementById("flagged-retry")?.addEventListener("click", () => {
     void loadBackendData();
   });
@@ -2857,9 +2866,19 @@ function syncTableSortHeaders(tableId, sortState) {
     const isActive = button.dataset.sortKey === sortState.key;
     const direction = isActive ? sortState.direction : "none";
     button.classList.toggle("active", isActive);
-    button.closest("th")?.setAttribute("aria-sort", direction === "none" ? "none" : direction === "asc" ? "ascending" : "descending");
+    button
+      .closest("th")
+      ?.setAttribute(
+        "aria-sort",
+        direction === "none"
+          ? "none"
+          : direction === "asc"
+            ? "ascending"
+            : "descending",
+      );
     const indicator = button.querySelector(".table-sort-indicator");
-    if (indicator) indicator.textContent = isActive ? (direction === "asc" ? "↑" : "↓") : "";
+    if (indicator)
+      indicator.textContent = isActive ? (direction === "asc" ? "↑" : "↓") : "";
   });
 }
 
@@ -3061,7 +3080,11 @@ function updateDashboardLocation(
 ) {
   const hash = sectionId ? `#${viewId}:${sectionId}` : `#${viewId}`;
   if (window.location.hash !== hash) {
-    window.history.pushState({ viewId, sectionId: sectionId || null }, "", hash);
+    window.history.pushState(
+      { viewId, sectionId: sectionId || null },
+      "",
+      hash,
+    );
   }
 }
 
@@ -3275,9 +3298,7 @@ function appendTableEmptyState(tbody, columnCount, message) {
 function clearDashboardTablePagination(tbodyId) {
   const tbody = document.getElementById(tbodyId);
   const host = tbody?.closest("table")?.parentElement;
-  const pager = host?.querySelector(
-    `[data-table-pagination="${tbodyId}"]`,
-  );
+  const pager = host?.querySelector(`[data-table-pagination="${tbodyId}"]`);
   pager?.remove();
   host?.classList.remove("is-paginated");
 }
@@ -3415,12 +3436,14 @@ function inboxSortValue(item, key) {
 }
 
 function casePriorityRank(priority) {
-  return {
-    critical: 4,
-    high: 3,
-    medium: 2,
-    low: 1,
-  }[String(priority || "low").toLowerCase()] || 0;
+  return (
+    {
+      critical: 4,
+      high: 3,
+      medium: 2,
+      low: 1,
+    }[String(priority || "low").toLowerCase()] || 0
+  );
 }
 
 function createCasePriorityBadge(priority) {
@@ -3606,7 +3629,8 @@ function sortDashboardRecords(records, sortState, valueFor) {
       return (leftValue - rightValue) * direction;
     }
     return (
-      dashboardTableCollator.compare(String(leftValue), String(rightValue)) * direction
+      dashboardTableCollator.compare(String(leftValue), String(rightValue)) *
+      direction
     );
   });
 }
@@ -3629,7 +3653,8 @@ function renderFeedbackInsights() {
   const safety = document.getElementById("feedback-safety-count");
   const patternCount = document.getElementById("feedback-pattern-count");
   const patternDetail = document.getElementById("feedback-pattern-detail");
-  if (!total || !attention || !safety || !patternCount || !patternDetail) return;
+  if (!total || !attention || !safety || !patternCount || !patternDetail)
+    return;
 
   if (!chatbotFeedbackInsights || chatbotFeedbackLoadState !== "ready") {
     total.textContent = "—";
@@ -3665,7 +3690,8 @@ function feedbackItemsForCurrentFilter() {
     const matchesCategory =
       filter === "all" ||
       (filter === "helpful" && helpfulCategories.includes(feedback.category)) ||
-      (filter === "attention" && !helpfulCategories.includes(feedback.category));
+      (filter === "attention" &&
+        !helpfulCategories.includes(feedback.category));
     const matchesContext =
       context === "all" || feedback.responseContext === context;
     const searchable = [
@@ -3678,7 +3704,11 @@ function feedbackItemsForCurrentFilter() {
     ]
       .join(" ")
       .toLowerCase();
-    return matchesCategory && matchesContext && (!query || searchable.includes(query));
+    return (
+      matchesCategory &&
+      matchesContext &&
+      (!query || searchable.includes(query))
+    );
   });
   items = sortDashboardRecords(items, feedbackSort, feedbackSortValue);
   return items;
@@ -3698,7 +3728,11 @@ function renderChatbotFeedback() {
   }
   if (chatbotFeedbackLoadState === "error") {
     clearDashboardTablePagination("feedback-tbody");
-    appendTableEmptyState(tbody, 6, "Student feedback is unavailable right now.");
+    appendTableEmptyState(
+      tbody,
+      6,
+      "Student feedback is unavailable right now.",
+    );
     return;
   }
   const items = feedbackItemsForCurrentFilter();
@@ -3737,7 +3771,11 @@ function renderChatbotFeedback() {
     row.appendChild(student);
     appendTableCell(row, feedback.program, "Program");
     appendTableCell(row, feedbackCategoryLabel(feedback.category), "Rating");
-    appendTableCell(row, feedbackContextLabel(feedback.responseContext), "Reply context");
+    appendTableCell(
+      row,
+      feedbackContextLabel(feedback.responseContext),
+      "Reply context",
+    );
     appendTableCell(row, feedback.comment, "Optional note");
     appendTableCell(
       row,
@@ -3837,7 +3875,9 @@ function renderFlaggedConversations() {
       7,
       "Flagged cases are unavailable. Retry to load authorized cases.",
     );
-    setFlaggedState("Flagged cases are unavailable. Retry to load authorized cases.");
+    setFlaggedState(
+      "Flagged cases are unavailable. Retry to load authorized cases.",
+    );
     return;
   }
 
@@ -4441,8 +4481,9 @@ function bindReportsControls() {
 
 function updateFlaggedCount() {
   const count = flaggedConversationsLoaded
-    ? flaggedConversations.filter((conversation) => conversation.status === "pending")
-        .length
+    ? flaggedConversations.filter(
+        (conversation) => conversation.status === "pending",
+      ).length
     : "—";
   const flaggedCount = document.getElementById("flagged-count");
   if (flaggedCount) {
@@ -4854,7 +4895,8 @@ async function renderReviewedCaseHistory(summaryId, existingItems = null) {
           `${API_BASE}/api/staff/inbox/${encodeURIComponent(summaryId)}/history`,
           { cache: "no-store" },
         )
-      ).data?.items || [];
+      ).data?.items ||
+      [];
     if (!items.length) return;
     card.dataset.caseHistoryAvailable = "true";
 
@@ -4959,11 +5001,11 @@ async function openRoutineInboxDetails(conversation, detail) {
   document.getElementById("case-message").textContent = detail.summary;
   document.getElementById("case-category").textContent =
     detail.primary_concern || "General inquiry";
-    document.getElementById("case-emotion").textContent = capitalize(
-      detail.emotion_results || "Unavailable",
-    );
-    applySafetyRisk(detail);
-    applyCasePriority(detail);
+  document.getElementById("case-emotion").textContent = capitalize(
+    detail.emotion_results || "Unavailable",
+  );
+  applySafetyRisk(detail);
+  applyCasePriority(detail);
   document.getElementById("case-time").textContent = detail.created_at
     ? new Date(detail.created_at).toLocaleString()
     : "Unavailable";
@@ -5043,7 +5085,8 @@ function renderFlaggedConversationTranscript(items) {
   if (!items.length) {
     const empty = document.createElement("p");
     empty.className = "sub";
-    empty.textContent = "No retained transcript is available for this flagged case.";
+    empty.textContent =
+      "No retained transcript is available for this flagged case.";
     list.appendChild(empty);
     return;
   }
@@ -5052,7 +5095,8 @@ function renderFlaggedConversationTranscript(items) {
     const entry = document.createElement("article");
     entry.className = "case-transcript-entry";
     const speaker = document.createElement("strong");
-    speaker.textContent = item.role === "student" ? "Student" : "CTRL4 Assistant";
+    speaker.textContent =
+      item.role === "student" ? "Student" : "CTRL4 Assistant";
     const content = document.createElement("p");
     content.textContent = item.content || "";
     entry.append(speaker, content);
@@ -5104,21 +5148,35 @@ async function openFlaggedConversationDetails(
     const removeConfidentialityButton = document.getElementById(
       "remove-case-confidential-btn",
     );
-    const [notesResponse, referralsResponse, interventionsResponse, confidentialityResponse, historyResponse, transcriptResponse] =
-      await Promise.all([
-        fetchJson(`${API_BASE}/api/flagged-conversations/${conversation.id}/notes`),
-        fetchJson(`${API_BASE}/api/flagged-conversations/${conversation.id}/referrals`),
-        fetchJson(`${API_BASE}/api/flagged-conversations/${conversation.id}/interventions`),
-        fetchJson(`${API_BASE}/api/flagged-conversations/${conversation.id}/confidentiality`),
-        fetchJson(
-          `${API_BASE}/api/staff/inbox/${encodeURIComponent(conversation.id)}/history`,
-          { cache: "no-store" },
-        ),
-        fetchJson(
-          `${API_BASE}/api/flagged-conversations/${conversation.id}/transcript`,
-          { cache: "no-store" },
-        ),
-      ]);
+    const [
+      notesResponse,
+      referralsResponse,
+      interventionsResponse,
+      confidentialityResponse,
+      historyResponse,
+      transcriptResponse,
+    ] = await Promise.all([
+      fetchJson(
+        `${API_BASE}/api/flagged-conversations/${conversation.id}/notes`,
+      ),
+      fetchJson(
+        `${API_BASE}/api/flagged-conversations/${conversation.id}/referrals`,
+      ),
+      fetchJson(
+        `${API_BASE}/api/flagged-conversations/${conversation.id}/interventions`,
+      ),
+      fetchJson(
+        `${API_BASE}/api/flagged-conversations/${conversation.id}/confidentiality`,
+      ),
+      fetchJson(
+        `${API_BASE}/api/staff/inbox/${encodeURIComponent(conversation.id)}/history`,
+        { cache: "no-store" },
+      ),
+      fetchJson(
+        `${API_BASE}/api/flagged-conversations/${conversation.id}/transcript`,
+        { cache: "no-store" },
+      ),
+    ]);
     const notes = notesResponse.data?.items || [];
     const referrals = referralsResponse.data?.items || [];
     const interventions = interventionsResponse.data?.items || [];
@@ -5858,9 +5916,12 @@ async function loadDashboardData() {
 
   const feedbackTask = (async () => {
     try {
-      const feedback = await fetchJson(`${API_BASE}/api/staff/chatbot-feedback`, {
-        cache: "no-store",
-      });
+      const feedback = await fetchJson(
+        `${API_BASE}/api/staff/chatbot-feedback`,
+        {
+          cache: "no-store",
+        },
+      );
       chatbotFeedback = (feedback.data?.items || []).map(mapChatbotFeedback);
       chatbotFeedbackInsights = feedback.data?.insights || null;
       chatbotFeedbackLoadState = "ready";
@@ -5998,7 +6059,8 @@ function setCaseDetailsTab(tabName) {
   const historyCard = document.getElementById("case-history-card");
   if (historyCard) {
     historyCard.hidden =
-      tabName !== "overview" || historyCard.dataset.caseHistoryAvailable !== "true";
+      tabName !== "overview" ||
+      historyCard.dataset.caseHistoryAvailable !== "true";
   }
   setCaseManagementTab(activeCaseManagementTab);
 }
@@ -6023,7 +6085,10 @@ function bindCaseDetailsTabs() {
 function setCaseManagementTab(tabName) {
   activeCaseManagementTab = tabName;
   document.querySelectorAll("[data-case-management-tab]").forEach((tab) => {
-    tab.classList.toggle("active", tab.dataset.caseManagementTab === tabName);
+    const selected = tab.dataset.caseManagementTab === tabName;
+    tab.classList.toggle("active", selected);
+    tab.setAttribute("aria-selected", String(selected));
+    tab.tabIndex = selected ? 0 : -1;
   });
   document.querySelectorAll("[data-case-management-panel]").forEach((panel) => {
     const panelName = panel.dataset.caseManagementPanel;
@@ -6032,6 +6097,9 @@ function setCaseManagementTab(tabName) {
     const shouldShow =
       panelName === "actions" || (available && panelName === tabName);
     panel.hidden = !shouldShow;
+    if (panelName !== "actions") {
+      panel.setAttribute("aria-hidden", String(!shouldShow));
+    }
   });
 }
 

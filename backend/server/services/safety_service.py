@@ -50,22 +50,26 @@ class SafetyService:
     _CRISIS_RESPONSES: Final[dict[str, str]] = {
         "english": (
             "I'm really sorry you're going through this. "
-            "Please contact the Guidance Office immediately "
-            "or reach out to someone you trust. "
+            "Your conversation has been referred to the Guidance Office, "
+            "and a counselor will review your message and follow up as soon "
+            "as possible. Please also reach out to someone you trust. "
             "If you are in immediate danger, "
             "please contact your local emergency services."
         ),
         "filipino": (
             "Ikinalulungkot kong nararanasan mo ito. "
-            "Mangyaring makipag-ugnayan agad sa Guidance Office "
-            "o sa isang taong pinagkakatiwalaan mo. "
+            "Naipasa na ang iyong pag-uusap sa Guidance Office, at susuriin "
+            "ito ng counselor at makikipag-ugnayan sa iyo sa lalong madaling "
+            "panahon. Mangyaring makipag-ugnayan din sa isang taong "
+            "pinagkakatiwalaan mo. "
             "Kung nasa agarang panganib ka, "
             "tumawag sa lokal na emergency services."
         ),
         "taglish": (
             "I'm really sorry na nararanasan mo ito. "
-            "Please contact the Guidance Office agad "
-            "or reach out to someone you trust. "
+            "Na-refer na ang conversation mo sa Guidance Office, at "
+            "rereviewhin ito ng counselor at makikipag-follow up sa iyo "
+            "as soon as possible. Please reach out din sa someone you trust. "
             "Kung nasa immediate danger ka, "
             "please contact your local emergency services."
         ),

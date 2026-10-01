@@ -89,7 +89,9 @@ function dismissMobileKeyboardFromChat(event) {
   if (
     !window.matchMedia("(hover: none), (pointer: coarse)").matches ||
     document.activeElement !== input ||
-    event.target.closest("button, a, input, textarea, select, label, [contenteditable='true']")
+    event.target.closest(
+      "button, a, input, textarea, select, label, [contenteditable='true']",
+    )
   ) {
     return;
   }
@@ -117,7 +119,8 @@ function normalReplyTypingDelay() {
   return (
     MIN_NORMAL_REPLY_TYPING_MS +
     Math.floor(
-      Math.random() * (MAX_NORMAL_REPLY_TYPING_MS - MIN_NORMAL_REPLY_TYPING_MS + 1),
+      Math.random() *
+        (MAX_NORMAL_REPLY_TYPING_MS - MIN_NORMAL_REPLY_TYPING_MS + 1),
     )
   );
 }
@@ -333,7 +336,10 @@ function createThumbIcon(direction) {
   const fill = document.createElementNS("http://www.w3.org/2000/svg", "path");
   fill.classList.add("thumb-fill");
   fill.setAttribute("d", handPath);
-  const outline = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  const outline = document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    "path",
+  );
   outline.classList.add("thumb-outline");
   outline.setAttribute("d", handPath);
   svg.append(fill, outline, handle);
@@ -388,7 +394,8 @@ function openFeedbackDialog(feedbackToken, direction, onSubmitted) {
   note.setAttribute("aria-label", "Optional feedback details");
   const safetyNote = document.createElement("p");
   safetyNote.className = "chatbot-feedback-safety-note";
-  safetyNote.textContent = "This feedback form is not monitored for emergencies. Do not include urgent or private details.";
+  safetyNote.textContent =
+    "This feedback form is not monitored for emergencies. Do not include urgent or private details.";
   const status = document.createElement("p");
   status.className = "chatbot-feedback-status";
   status.setAttribute("role", "status");
@@ -408,7 +415,9 @@ function openFeedbackDialog(feedbackToken, direction, onSubmitted) {
       selectedCategory = value;
       categoryList
         .querySelectorAll(".chatbot-feedback-category")
-        .forEach((button) => button.classList.toggle("selected", button === category));
+        .forEach((button) =>
+          button.classList.toggle("selected", button === category),
+        );
       submit.disabled = false;
       status.textContent = "";
     });
@@ -459,18 +468,6 @@ function openFeedbackDialog(feedbackToken, direction, onSubmitted) {
   overlay.appendChild(dialog);
   document.body.appendChild(overlay);
   categoryList.querySelector("button")?.focus();
-}
-
-function appendEscalationNotice() {
-  const wrap = document.createElement("div");
-  wrap.className = "escalation-wrap";
-  wrap.innerHTML = `
-    <div class="escalation-notice">
-      <span class="icon"></span>
-      <span>For your safety, your conversation has been referred to the Guidance Office. A counselor will review your message and follow up as soon as possible. If you are in immediate danger, contact local emergency services or a trusted adult immediately.</span>
-    </div>`;
-  chatArea.appendChild(wrap);
-  scrollToBottom();
 }
 
 function showTypingIndicator() {
@@ -554,10 +551,6 @@ async function sendMessage() {
     currentFlagged = Boolean(result.escalated);
 
     recordChatActivity();
-
-    if (result.escalated) {
-      setTimeout(appendEscalationNotice, 400);
-    }
   } catch (_) {
     removeTypingIndicator();
     appendBotMessage(
@@ -748,7 +741,10 @@ document.addEventListener(
   () => {
     bindChatVisibleViewport();
     bindMobileKeyboardDismissal();
-    document.addEventListener("visibilitychange", checkInactivityAfterVisibilityChange);
+    document.addEventListener(
+      "visibilitychange",
+      checkInactivityAfterVisibilityChange,
+    );
     initializeChat();
   },
   { once: true },
