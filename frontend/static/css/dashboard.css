@@ -1610,6 +1610,59 @@ table.inquiry-table .table-empty-state {
   text-align: right;
 }
 
+#view-reports #reports-student-cases-table th,
+#view-reports #reports-student-cases-table td,
+#view-reports #reports-student-appointments-table th,
+#view-reports #reports-student-appointments-table td {
+  width: auto;
+}
+
+#view-reports #reports-student-cases-table th:nth-child(1),
+#view-reports #reports-student-cases-table td:nth-child(1),
+#view-reports #reports-student-appointments-table th:nth-child(1),
+#view-reports #reports-student-appointments-table td:nth-child(1) {
+  width: 28%;
+}
+
+#view-reports #reports-student-cases-table th:nth-child(2),
+#view-reports #reports-student-cases-table td:nth-child(2),
+#view-reports #reports-student-appointments-table th:nth-child(2),
+#view-reports #reports-student-appointments-table td:nth-child(2) {
+  width: 14%;
+}
+
+#view-reports #reports-student-cases-table th:nth-child(3),
+#view-reports #reports-student-cases-table td:nth-child(3) {
+  width: 28%;
+}
+
+#view-reports #reports-student-appointments-table th:nth-child(3),
+#view-reports #reports-student-appointments-table td:nth-child(3) {
+  width: 12%;
+}
+
+#view-reports #reports-student-cases-table th:nth-child(4),
+#view-reports #reports-student-cases-table td:nth-child(4),
+#view-reports #reports-student-appointments-table th:nth-child(4),
+#view-reports #reports-student-appointments-table td:nth-child(4) {
+  width: 12%;
+}
+
+#view-reports #reports-student-cases-table th:nth-child(5),
+#view-reports #reports-student-cases-table td:nth-child(5),
+#view-reports #reports-student-appointments-table th:nth-child(5),
+#view-reports #reports-student-appointments-table td:nth-child(5) {
+  width: 10%;
+}
+
+#view-reports #reports-student-cases-table th:nth-child(6),
+#view-reports #reports-student-cases-table td:nth-child(6),
+#view-reports #reports-student-appointments-table th:nth-child(6),
+#view-reports #reports-student-appointments-table td:nth-child(6) {
+  width: 10%;
+  text-align: right;
+}
+
 #view-reports .inquiry-table thead th {
   padding: 10px 16px;
 }
