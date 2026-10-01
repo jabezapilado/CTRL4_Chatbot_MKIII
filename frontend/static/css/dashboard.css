@@ -2457,6 +2457,36 @@ table.inquiry-table .table-empty-state {
   outline-offset: 2px;
 }
 
+.case-management-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  background: var(--gray-50);
+}
+
+.case-management-tab {
+  min-height: 32px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--gray-600);
+  font: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 5px 4px;
+  cursor: pointer;
+}
+
+.case-management-tab.active,
+.case-management-tab:hover {
+  background: var(--white);
+  color: var(--orange);
+  box-shadow: var(--shadow-sm);
+}
+
 .case-tab-panel[hidden] {
   display: none;
 }

@@ -1990,7 +1990,14 @@
                   </div>
                 </div>
 
-                <div class="case-actions-card">
+                <nav class="case-management-tabs" aria-label="Case management tools" hidden>
+                  <button class="case-management-tab active" type="button" data-case-management-tab="actions">Actions</button>
+                  <button class="case-management-tab" type="button" data-case-management-tab="confidentiality">Privacy</button>
+                  <button class="case-management-tab" type="button" data-case-management-tab="referrals">Referrals</button>
+                  <button class="case-management-tab" type="button" data-case-management-tab="interventions">Interventions</button>
+                </nav>
+
+                <div class="case-actions-card" data-case-management-panel="actions">
                   <h4>Staff Actions</h4>
                   <p class="sub">
                     Select the next action for this student concern.
@@ -2022,6 +2029,7 @@
                   class="case-confidentiality-card"
                   id="case-confidentiality-card"
                   data-case-record-control
+                  data-case-management-panel="confidentiality"
                   hidden
                 >
                   <h4>Case Confidentiality</h4>
@@ -2058,7 +2066,7 @@
                   </div>
                 </div>
 
-                <div class="referrals-card" id="case-referrals-card" data-case-record-control hidden>
+                <div class="referrals-card" id="case-referrals-card" data-case-record-control data-case-management-panel="referrals" hidden>
                   <h4>Internal Referrals</h4>
                   <div class="notes-sub">Guidance Office Records</div>
                   <div id="case-referrals-list" class="referrals-list"></div>
@@ -2106,6 +2114,7 @@
                   class="interventions-card"
                   id="case-interventions-card"
                   data-case-record-control
+                  data-case-management-panel="interventions"
                   hidden
                 >
                   <h4>Confidential Interventions</h4>

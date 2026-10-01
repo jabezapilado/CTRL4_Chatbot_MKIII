@@ -26,6 +26,7 @@ let reportsAnalytics = null;
 let dashboardLoadPromise = null;
 let reportsLoadPromise = null;
 let activeCaseDetailsTab = "overview";
+let activeCaseManagementTab = "actions";
 const DASHBOARD_TABLE_PAGE_SIZE = 10;
 const DASHBOARD_TABLE_PAGE_SIZES = Object.freeze({
   "inbox-tbody": 7,
@@ -5993,9 +5994,11 @@ function setCaseDetailsTab(tabName) {
     panel.hidden = panel.dataset.caseTabPanel !== tabName;
   });
   document.querySelectorAll("[data-case-record-control]").forEach((card) => {
-    card.hidden =
-      tabName !== "records" || card.dataset.caseRecordAvailable !== "true";
+    card.hidden = true;
   });
+  const managementTabs = document.querySelector(".case-management-tabs");
+  if (managementTabs) managementTabs.hidden = tabName !== "records";
+  setCaseManagementTab(activeCaseManagementTab);
 }
 
 function configureCaseDetailsTabs(isFlagged) {
@@ -6009,6 +6012,32 @@ function configureCaseDetailsTabs(isFlagged) {
 function bindCaseDetailsTabs() {
   document.querySelectorAll("[data-case-tab]").forEach((tab) => {
     tab.addEventListener("click", () => setCaseDetailsTab(tab.dataset.caseTab));
+  });
+}
+
+function setCaseManagementTab(tabName) {
+  activeCaseManagementTab = tabName;
+  document.querySelectorAll("[data-case-management-tab]").forEach((tab) => {
+    tab.classList.toggle("active", tab.dataset.caseManagementTab === tabName);
+  });
+  document.querySelectorAll("[data-case-management-panel]").forEach((panel) => {
+    const panelName = panel.dataset.caseManagementPanel;
+    const available =
+      panelName === "actions" || panel.dataset.caseRecordAvailable === "true";
+    const shouldShow =
+      available &&
+      (activeCaseDetailsTab !== "records"
+        ? panelName === "actions"
+        : panelName === tabName);
+    panel.hidden = !shouldShow;
+  });
+}
+
+function bindCaseManagementTabs() {
+  document.querySelectorAll("[data-case-management-tab]").forEach((tab) => {
+    tab.addEventListener("click", () => {
+      setCaseManagementTab(tab.dataset.caseManagementTab);
+    });
   });
 }
 
@@ -6042,6 +6071,7 @@ bindInboxControls();
 bindFeedbackControls();
 bindFlaggedControls();
 bindCaseDetailsTabs();
+bindCaseManagementTabs();
 bindFaqManagement();
 bindAppointmentSearch();
 bindAppointmentCalendar();

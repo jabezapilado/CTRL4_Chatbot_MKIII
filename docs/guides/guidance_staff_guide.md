@@ -54,6 +54,10 @@ Case Details uses **Overview**, **Conversation**, and **Case Records** tabs.
 Counselor Notes and Staff Actions remain visible at the top-right. Conversation
 and Case Records are available only for an authorized flagged case.
 
+Within **Case Records**, use the compact **Actions**, **Privacy**,
+**Referrals**, and **Interventions** controls to open one management form at a
+time instead of scrolling through every form.
+
 The Inbox and Flagged Cases tables show 7 records per page because their
 summary rows can be longer. Chatbot Feedback, analytics, and report tables
 show 10 records per page. Use **Previous** and **Next** to move through the

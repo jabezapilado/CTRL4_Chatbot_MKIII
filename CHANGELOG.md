@@ -10,6 +10,9 @@ The format follows the principles of **Keep a Changelog**.
 
 ### Changed
 
+- Replaced the long Case Records management stack with compact Actions,
+  Privacy, Referrals, and Interventions controls so staff work with one form at
+  a time while Counselor Notes remains at the top-right.
 - Organized staff Case Details into Overview, Conversation, and Case Records
   tabs. Counselor Notes and Staff Actions remain at the top-right for every
   tab, while transcripts and other restricted records stay staff-only.
