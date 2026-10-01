@@ -45,6 +45,11 @@ authorized counselor can assess the context of the concern. Routine
 conversations do not receive this retained transcript. Do not enter
 information you do not need the Guidance Office to handle.
 
+Use **Change Password** in the chatbot quick-reply row to update your own
+password. Enter your current password and the same new password twice; the new
+password must contain at least eight characters. This feature cannot change
+another account's password.
+
 Send one message at a time. While CTRL4 is preparing an ordinary reply, the
 message field, **Send** button, and quick-reply buttons are briefly unavailable.
 They become available again after the reply. Safety and escalation replies are

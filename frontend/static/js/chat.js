@@ -702,6 +702,82 @@ function restoreVisibleChat(items) {
   });
 }
 
+function bindStudentPasswordChange() {
+  const dialog = document.getElementById("student-password-dialog");
+  const form = document.getElementById("student-password-form");
+  const error = document.getElementById("student-password-error");
+  const openButton = document.getElementById("student-change-password-btn");
+  const cancelButton = document.getElementById("student-password-cancel");
+  const submitButton = document.getElementById("student-password-submit");
+  if (
+    !dialog ||
+    !form ||
+    !error ||
+    !openButton ||
+    !cancelButton ||
+    !submitButton
+  ) {
+    return;
+  }
+
+  const currentPassword = document.getElementById("student-current-password");
+  const newPassword = document.getElementById("student-new-password");
+  const confirmPassword = document.getElementById("student-confirm-password");
+  const setError = (message) => {
+    error.textContent = message || "";
+    error.hidden = !message;
+  };
+
+  openButton.addEventListener("click", () => {
+    form.reset();
+    setError("");
+    dialog.showModal();
+    currentPassword.focus();
+  });
+  cancelButton.addEventListener("click", () => dialog.close());
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    setError("");
+    if (!currentPassword.value || newPassword.value.length < 8) {
+      setError(
+        "Use your current password and a new password of at least 8 characters.",
+      );
+      return;
+    }
+    if (newPassword.value !== confirmPassword.value) {
+      setError("New passwords do not match.");
+      return;
+    }
+
+    submitButton.disabled = true;
+    try {
+      const response = await fetch(
+        `${API_BASE}/api/accounts/student/password`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            current_password: currentPassword.value,
+            new_password: newPassword.value,
+            confirm_password: confirmPassword.value,
+          }),
+        },
+      );
+      const payload = await response.json();
+      if (!response.ok || !payload.success) {
+        throw new Error(payload.message || "Unable to update password.");
+      }
+      dialog.close();
+      createToast("Password updated successfully.", "success");
+    } catch (requestError) {
+      setError(requestError.message || "Unable to update password.");
+    } finally {
+      submitButton.disabled = false;
+    }
+  });
+}
+
 async function initializeChat() {
   setChatTurnPending(true);
 
@@ -741,6 +817,7 @@ document.addEventListener(
   () => {
     bindChatVisibleViewport();
     bindMobileKeyboardDismissal();
+    bindStudentPasswordChange();
     document.addEventListener(
       "visibilitychange",
       checkInactivityAfterVisibilityChange,

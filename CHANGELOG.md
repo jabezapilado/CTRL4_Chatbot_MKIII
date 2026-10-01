@@ -22,6 +22,8 @@ The format follows the principles of **Keep a Changelog**.
   counts and the distributions shown in the Overview graphs.
 - Added a standalone visual HTML Overview export containing the counselor KPI
   summary and embedded case-priority and appointment-status graphs.
+- Added student self-service password changes from the chatbot quick-reply row;
+  the current password is required and the server enforces student ownership.
 - Consolidated crisis escalation messaging into the chatbot response so the
   student sees one clear reply that confirms counselor referral and follow-up;
   the duplicate escalation banner is no longer rendered separately.

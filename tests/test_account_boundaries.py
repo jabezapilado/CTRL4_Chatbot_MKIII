@@ -347,6 +347,78 @@ class AccountBoundaryTests(unittest.TestCase):
                 },
             )
 
+    def test_student_can_update_only_their_own_password_after_verification(self) -> None:
+        credentials = {
+            "id": 12,
+            "status": "active",
+            "password_hash": account_service.generate_password_hash("current-password"),
+        }
+        with patch.object(
+            account_service,
+            "fetch_account_password_credentials",
+            return_value=credentials,
+        ), patch.object(
+            account_service,
+            "update_account_password_hash",
+            return_value=True,
+        ) as update:
+            account_service.update_own_student_password_service(
+                {"id": 12},
+                {
+                    "current_password": "current-password",
+                    "new_password": "new-password",
+                    "confirm_password": "new-password",
+                },
+            )
+
+        self.assertEqual(update.call_args.args[0], 12)
+        self.assertEqual(update.call_args.kwargs["role"], "student")
+        self.assertTrue(
+            account_service.check_password_hash(
+                update.call_args.args[1],
+                "new-password",
+            )
+        )
+
+    def test_student_password_route_requires_student_role(self) -> None:
+        from backend.server.routes import account_routes
+        from backend.server.routes.account_routes import account_bp
+
+        app = Flask(__name__)
+        app.secret_key = "student-own-password-route"
+        app.register_blueprint(account_bp)
+
+        def client_for(role: str):
+            client = app.test_client()
+            with client.session_transaction() as session:
+                session["hau_user"] = {
+                    "id": 12,
+                    "email": f"{role}@example.test",
+                    "role": role,
+                }
+            return client
+
+        payload = {
+            "current_password": "current-password",
+            "new_password": "new-password",
+            "confirm_password": "new-password",
+        }
+        with patch.object(account_routes, "update_own_student_password_service") as update:
+            response = client_for("student").post(
+                "/api/accounts/student/password",
+                json=payload,
+            )
+
+        self.assertEqual(response.status_code, 200)
+        update.assert_called_once_with({"id": 12, "email": "student@example.test", "role": "student"}, payload)
+        self.assertEqual(
+            client_for("staff").post(
+                "/api/accounts/student/password",
+                json=payload,
+            ).status_code,
+            403,
+        )
+
     def test_admin_can_reset_student_password_without_exposing_the_hash(self) -> None:
         with patch.object(
             account_service,

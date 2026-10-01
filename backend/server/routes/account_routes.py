@@ -16,6 +16,7 @@ from ..services.account_service import (
     search_students_for_staff_service,
     reset_student_password_service,
     get_own_staff_operational_profile_service,
+    update_own_student_password_service,
     update_own_staff_password_service,
     update_own_staff_operational_profile_service,
     StudentAccountImportValidationError,
@@ -148,6 +149,31 @@ def update_staff_password_route():
         return error
     try:
         update_own_staff_password_service(
+            user,
+            request.get_json(silent=True) or {},
+        )
+    except ValueError as exc:
+        return _error_response(str(exc), 400)
+    except PermissionError as exc:
+        return _error_response(str(exc), 400)
+    except LookupError as exc:
+        return _error_response(str(exc), 404)
+    return jsonify(
+        {
+            "success": True,
+            "message": "Password updated successfully.",
+            "data": None,
+        }
+    ), 200
+
+
+@account_bp.post("/student/password")
+def update_student_password_route():
+    user, error = require_role("student")
+    if error:
+        return error
+    try:
+        update_own_student_password_service(
             user,
             request.get_json(silent=True) or {},
         )

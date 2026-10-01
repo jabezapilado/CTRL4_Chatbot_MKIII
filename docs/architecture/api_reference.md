@@ -69,6 +69,7 @@ guidance-record access. All endpoints in the following table require `admin`.
 | DELETE | `/api/accounts/staff/<account_id>` | None | 200 disabled status | 400, 404 |
 | PATCH | `/api/accounts/admin/<account_id>` | Approved administrator profile fields | 200 updated account | 400, 404, 409 |
 | DELETE | `/api/accounts/admin/<account_id>` | None | 200 disabled status | 400, 404; self-deactivation is rejected |
+| POST | `/api/accounts/student/password` | Student only: `current_password`, `new_password`, `confirm_password` | 200 password updated | 400 invalid/current password or confirmation; 403 non-student; 404 inactive/missing account |
 
 Every creation payload has `full_name`, `email`, `password`, and `role` (the
 role defaults to `student` only when omitted). A student may provide `gender`

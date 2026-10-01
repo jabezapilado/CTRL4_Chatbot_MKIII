@@ -71,6 +71,7 @@ STAFF_OWN_PASSWORD_FIELDS = frozenset({
     "new_password",
     "confirm_password",
 })
+STUDENT_OWN_PASSWORD_FIELDS = STAFF_OWN_PASSWORD_FIELDS
 ADMIN_STUDENT_PASSWORD_RESET_FIELDS = frozenset({
     "new_password",
     "confirm_password",
@@ -861,6 +862,39 @@ def update_own_staff_password_service(staff_account: dict, payload: dict) -> Non
     )
     if not updated:
         raise LookupError("Staff account not found.")
+
+
+def update_own_student_password_service(student_account: dict, payload: dict) -> None:
+    if not isinstance(payload, dict):
+        raise ValueError("Invalid request payload.")
+    unsupported_fields = set(payload) - STUDENT_OWN_PASSWORD_FIELDS
+    if unsupported_fields:
+        raise ValueError("Unsupported password update field.")
+
+    current_password = str(payload.get("current_password", ""))
+    new_password = str(payload.get("new_password", ""))
+    confirm_password = str(payload.get("confirm_password", ""))
+    if not current_password or not new_password or not confirm_password:
+        raise ValueError("Current password, new password, and confirmation are required.")
+    if len(new_password) < 8:
+        raise ValueError("New password must be at least 8 characters long.")
+    if new_password != confirm_password:
+        raise ValueError("New passwords do not match.")
+
+    account_id = int(student_account["id"])
+    credentials = fetch_account_password_credentials(account_id, role="student")
+    if not credentials or credentials.get("status") != "active":
+        raise LookupError("Student account not found.")
+    if not check_password_hash(str(credentials.get("password_hash", "")), current_password):
+        raise PermissionError("Current password is incorrect.")
+
+    updated = update_account_password_hash(
+        account_id,
+        generate_password_hash(new_password),
+        role="student",
+    )
+    if not updated:
+        raise LookupError("Student account not found.")
 
 
 def reset_student_password_service(account_id: int, payload: dict) -> None:

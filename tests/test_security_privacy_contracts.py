@@ -68,6 +68,13 @@ class SecurityPrivacyContractTests(unittest.TestCase):
         chatbot_template = _source("frontend/templates/chatbot.html")
         self.assertIn('data-student-session-monitor="true"', chatbot_template)
         self.assertNotIn('href="/case-status"', chatbot_template)
+        self.assertIn('id="student-change-password-btn"', chatbot_template)
+        self.assertIn('id="student-password-dialog"', chatbot_template)
+        self.assertNotIn('data-quick-message="I need counseling support"', chatbot_template)
+        self.assertNotIn('data-quick-message="I have a concern about a classmate"', chatbot_template)
+
+        chat = _source("frontend/static/js/chat.js")
+        self.assertIn("/api/accounts/student/password", chat)
 
         self.assertIn('@auth_bp.get("/auth/session-status")', auth)
 

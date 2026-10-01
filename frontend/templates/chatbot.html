@@ -76,20 +76,8 @@
           Book Appointment
         </button>
 
-        <button
-          class="qr-btn"
-          type="button"
-          data-quick-message="I need counseling support"
-        >
-          Counseling
-        </button>
-
-        <button
-          class="qr-btn"
-          type="button"
-          data-quick-message="I have a concern about a classmate"
-        >
-          Report Concern
+        <button class="qr-btn" type="button" id="student-change-password-btn">
+          Change Password
         </button>
       </div>
 
@@ -127,6 +115,71 @@
       </div>
     </div>
 
+    <dialog
+      class="terms-dialog"
+      id="student-password-dialog"
+      aria-labelledby="student-password-title"
+    >
+      <form class="terms-dialog-content" id="student-password-form" novalidate>
+        <p class="terms-kicker">Account security</p>
+        <h1 id="student-password-title">Change Password</h1>
+        <div class="terms-copy">
+          <p>Choose a new password for your student account.</p>
+        </div>
+        <label class="terms-agreement" for="student-current-password">
+          <span>Current password</span>
+          <input
+            id="student-current-password"
+            type="password"
+            autocomplete="current-password"
+            required
+          />
+        </label>
+        <label class="terms-agreement" for="student-new-password">
+          <span>New password</span>
+          <input
+            id="student-new-password"
+            type="password"
+            autocomplete="new-password"
+            minlength="8"
+            required
+          />
+        </label>
+        <label class="terms-agreement" for="student-confirm-password">
+          <span>Confirm new password</span>
+          <input
+            id="student-confirm-password"
+            type="password"
+            autocomplete="new-password"
+            minlength="8"
+            required
+          />
+        </label>
+        <p
+          class="terms-error"
+          id="student-password-error"
+          role="alert"
+          hidden
+        ></p>
+        <div class="terms-actions">
+          <button
+            class="btn btn-outline"
+            id="student-password-cancel"
+            type="button"
+          >
+            Cancel
+          </button>
+          <button
+            class="btn btn-primary"
+            id="student-password-submit"
+            type="submit"
+          >
+            Update Password
+          </button>
+        </div>
+      </form>
+    </dialog>
+
     {% if terms_required %}
     <dialog
       class="terms-dialog"
@@ -144,9 +197,9 @@
           </p>
           <p>
             Your messages may be recorded and summarized for guidance support.
-            If a conversation is flagged for counselor review, its transcript
-            is retained for authorized Guidance Office staff to assess the
-            concern. Information is handled according to Guidance Office procedures, but
+            If a conversation is flagged for counselor review, its transcript is
+            retained for authorized Guidance Office staff to assess the concern.
+            Information is handled according to Guidance Office procedures, but
             confidentiality has limits when there is a serious safety concern or
             disclosure is required by law or school policy.
           </p>
