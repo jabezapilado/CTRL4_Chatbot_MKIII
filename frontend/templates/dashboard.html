@@ -1873,18 +1873,6 @@
                   >
                     Conversation
                   </button>
-                  <button
-                    class="case-tab"
-                    type="button"
-                    role="tab"
-                    id="case-tab-records"
-                    aria-controls="case-tab-panel-records"
-                    aria-selected="false"
-                    data-case-tab="records"
-                    hidden
-                  >
-                    Case Records
-                  </button>
                 </nav>
 
                 <section
@@ -1953,20 +1941,11 @@
                 </div>
                 </section>
 
-                <section
-                  class="case-tab-panel"
-                  id="case-tab-panel-records"
-                  role="tabpanel"
-                  aria-labelledby="case-tab-records"
-                  data-case-tab-panel="records"
-                  hidden
-                >
-                  <section class="case-history-card" id="case-history-card" hidden>
-                    <div class="case-history-heading">
-                      <h3>Reviewed Case History</h3>
-                    </div>
-                    <div class="case-history-list" id="case-history-list"></div>
-                  </section>
+                <section class="case-history-card" id="case-history-card" hidden>
+                  <div class="case-history-heading">
+                    <h3>Reviewed Case History</h3>
+                  </div>
+                  <div class="case-history-list" id="case-history-list"></div>
                 </section>
               </div>
 
@@ -1989,13 +1968,6 @@
                     </button>
                   </div>
                 </div>
-
-                <nav class="case-management-tabs" aria-label="Case management tools" hidden>
-                  <button class="case-management-tab active" type="button" data-case-management-tab="actions">Actions</button>
-                  <button class="case-management-tab" type="button" data-case-management-tab="confidentiality">Privacy</button>
-                  <button class="case-management-tab" type="button" data-case-management-tab="referrals">Referrals</button>
-                  <button class="case-management-tab" type="button" data-case-management-tab="interventions">Interventions</button>
-                </nav>
 
                 <div class="case-actions-card" data-case-management-panel="actions">
                   <h4>Staff Actions</h4>
@@ -2024,6 +1996,12 @@
                     personnel.
                   </div>
                 </div>
+
+                <nav class="case-management-tabs" aria-label="Case records tools" hidden>
+                  <button class="case-management-tab active" type="button" data-case-management-tab="confidentiality">Privacy</button>
+                  <button class="case-management-tab" type="button" data-case-management-tab="referrals">Referrals</button>
+                  <button class="case-management-tab" type="button" data-case-management-tab="interventions">Interventions</button>
+                </nav>
 
                 <div
                   class="case-confidentiality-card"

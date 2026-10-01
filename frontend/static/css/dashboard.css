@@ -2459,7 +2459,7 @@ table.inquiry-table .table-empty-state {
 
 .case-management-tabs {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 4px;
   padding: 4px;
   border: 1px solid var(--gray-200);

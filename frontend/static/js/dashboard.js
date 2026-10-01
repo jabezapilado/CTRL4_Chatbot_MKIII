@@ -26,7 +26,7 @@ let reportsAnalytics = null;
 let dashboardLoadPromise = null;
 let reportsLoadPromise = null;
 let activeCaseDetailsTab = "overview";
-let activeCaseManagementTab = "actions";
+let activeCaseManagementTab = "confidentiality";
 const DASHBOARD_TABLE_PAGE_SIZE = 10;
 const DASHBOARD_TABLE_PAGE_SIZES = Object.freeze({
   "inbox-tbody": 7,
@@ -4844,6 +4844,7 @@ async function renderReviewedCaseHistory(summaryId, existingItems = null) {
   if (!card || !list) return;
 
   card.hidden = true;
+  card.dataset.caseHistoryAvailable = "false";
   list.replaceChildren();
   try {
     const items =
@@ -4855,6 +4856,7 @@ async function renderReviewedCaseHistory(summaryId, existingItems = null) {
         )
       ).data?.items || [];
     if (!items.length) return;
+    card.dataset.caseHistoryAvailable = "true";
 
     items.forEach((item) => {
       const isCurrentCase = String(item.summary_id) === String(summaryId);
@@ -4894,7 +4896,7 @@ async function renderReviewedCaseHistory(summaryId, existingItems = null) {
       row.append(content, actions);
       list.appendChild(row);
     });
-    card.hidden = false;
+    card.hidden = activeCaseDetailsTab !== "overview";
   } catch (error) {
     console.error(error);
   }
@@ -5993,11 +5995,11 @@ function setCaseDetailsTab(tabName) {
   document.querySelectorAll("[data-case-tab-panel]").forEach((panel) => {
     panel.hidden = panel.dataset.caseTabPanel !== tabName;
   });
-  document.querySelectorAll("[data-case-record-control]").forEach((card) => {
-    card.hidden = true;
-  });
-  const managementTabs = document.querySelector(".case-management-tabs");
-  if (managementTabs) managementTabs.hidden = tabName !== "records";
+  const historyCard = document.getElementById("case-history-card");
+  if (historyCard) {
+    historyCard.hidden =
+      tabName !== "overview" || historyCard.dataset.caseHistoryAvailable !== "true";
+  }
   setCaseManagementTab(activeCaseManagementTab);
 }
 
@@ -6006,6 +6008,9 @@ function configureCaseDetailsTabs(isFlagged) {
     const requiresFlaggedCase = tab.dataset.caseTab !== "overview";
     tab.hidden = requiresFlaggedCase && !isFlagged;
   });
+  const managementTabs = document.querySelector(".case-management-tabs");
+  if (managementTabs) managementTabs.hidden = !isFlagged;
+  activeCaseManagementTab = "confidentiality";
   setCaseDetailsTab("overview");
 }
 
@@ -6025,10 +6030,7 @@ function setCaseManagementTab(tabName) {
     const available =
       panelName === "actions" || panel.dataset.caseRecordAvailable === "true";
     const shouldShow =
-      available &&
-      (activeCaseDetailsTab !== "records"
-        ? panelName === "actions"
-        : panelName === tabName);
+      panelName === "actions" || (available && panelName === tabName);
     panel.hidden = !shouldShow;
   });
 }

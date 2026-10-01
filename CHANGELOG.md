@@ -10,6 +10,9 @@ The format follows the principles of **Keep a Changelog**.
 
 ### Changed
 
+- Kept Staff Actions independent in the right-side panel, reduced the main
+  Case Details navigation to Overview and Conversation, and made Privacy,
+  Referrals, and Interventions the independent Case Records controls.
 - Replaced the long Case Records management stack with compact Actions,
   Privacy, Referrals, and Interventions controls so staff work with one form at
   a time while Counselor Notes remains at the top-right.

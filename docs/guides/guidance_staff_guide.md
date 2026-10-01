@@ -50,13 +50,13 @@ Cases default-sort by priority and offer priority filters. Critical alerts in
 Notifications are visibly marked and state that immediate Guidance Office
 review is required.
 
-Case Details uses **Overview**, **Conversation**, and **Case Records** tabs.
+Case Details uses **Overview** and **Conversation** tabs.
 Counselor Notes and Staff Actions remain visible at the top-right. Conversation
-and Case Records are available only for an authorized flagged case.
+is available only for an authorized flagged case.
 
-Within **Case Records**, use the compact **Actions**, **Privacy**,
-**Referrals**, and **Interventions** controls to open one management form at a
-time instead of scrolling through every form.
+Staff Actions is independent. Within the right-side Case Records controls, use
+**Privacy**, **Referrals**, and **Interventions** to open one management form
+at a time instead of scrolling through every form.
 
 The Inbox and Flagged Cases tables show 7 records per page because their
 summary rows can be longer. Chatbot Feedback, analytics, and report tables
