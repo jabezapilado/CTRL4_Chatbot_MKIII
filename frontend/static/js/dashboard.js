@@ -590,6 +590,22 @@ function renderChatbotAnalytics() {
     "month",
     "No persisted inquiry records for this period.",
   );
+  renderStudentReportGraph(
+    "chatbot-analytics-emotion-graph",
+    (analytics.persisted_emotion_result_distribution || []).map((item) => ({
+      label: item.emotion_result || "Unknown",
+      value: Number(item.count) || 0,
+    })),
+    "No persisted inquiry records for this period.",
+  );
+  renderStudentReportGraph(
+    "chatbot-analytics-daily-graph",
+    (volume.daily || []).slice(-7).map((item) => ({
+      label: item.date,
+      value: Number(item.count) || 0,
+    })),
+    "No daily message records for this period.",
+  );
 }
 
 function todayAnalyticsQuery() {
@@ -732,6 +748,14 @@ function renderCounselorWorkloadAnalytics() {
     "program",
     "No authorized appointment records for this period.",
   );
+  renderStudentReportGraph(
+    "counselor-workload-program-graph",
+    (analytics.workload_by_program || []).map((item) => ({
+      label: item.program || "Unknown",
+      value: Number(item.count) || 0,
+    })),
+    "No authorized appointment records for this period.",
+  );
 }
 
 async function loadCounselorWorkloadAnalytics() {
@@ -828,6 +852,14 @@ function renderFlaggedCaseAnalytics() {
     trends.monthly || [],
     "month",
     "No escalation records for this period.",
+  );
+  renderStudentReportGraph(
+    "flagged-case-status-graph",
+    (analytics.persisted_case_status_distribution || []).map((item) => ({
+      label: item.status || "Unknown",
+      value: Number(item.count) || 0,
+    })),
+    "No flagged-case records for this period.",
   );
 }
 
@@ -3978,7 +4010,11 @@ function appendStudentReportCell(row, value) {
   row.appendChild(cell);
 }
 
-function renderStudentReportGraph(containerId, rows) {
+function renderStudentReportGraph(
+  containerId,
+  rows,
+  emptyMessage = "No student records are available.",
+) {
   const container = document.getElementById(containerId);
   if (!container) return;
   container.replaceChildren();
@@ -3986,7 +4022,7 @@ function renderStudentReportGraph(containerId, rows) {
   if (!rows.length) {
     const empty = document.createElement("p");
     empty.className = "sub";
-    empty.textContent = "No student records are available.";
+    empty.textContent = emptyMessage;
     container.appendChild(empty);
     return;
   }
@@ -4390,109 +4426,42 @@ function csvCell(value) {
 }
 
 function reportCsvRows() {
-  const reports = reportsAnalytics;
-  if (!reports) return [];
-
-  const { startDate, endDate } = selectedReportDateRange();
   const rows = [
-    ["Report", "Generated at", "", new Date().toISOString()],
-    ["Report", "Start date", "", startDate || "All records"],
-    ["Report", "End date", "", endDate || "All records"],
-    ["Section", "Metric", "Period", "Value"],
+    ["Overview summary", "Generated at", new Date().toISOString()],
+    ["Section", "Metric", "Value"],
   ];
-  const add = (section, metric, value, period = "") => {
-    rows.push([section, metric, period, value]);
-  };
-  const addTrends = (section, metric, trends) => {
-    (trends || []).forEach((item) => {
-      add(section, metric, item.count, item.date || item.week || item.month);
-    });
-  };
+  const add = (metric, value) => rows.push(["Student Overview", metric, value]);
+  const cases = flaggedConversations.filter(
+    (item) => item.flagged && item.status !== "reviewed",
+  );
+  const appointments = (window.backendAppointments || []).filter((item) =>
+    ["pending", "confirmed"].includes(item.status),
+  );
+  const referrals = cases.filter((item) => item.hasReferral).length;
+  add("Student appointments", appointments.length);
+  add("Students needing review", cases.length);
+  add("Student case records", flaggedConversations.length);
+  add("Students with referrals", referrals);
 
-  const appointment = reports.appointment || {};
-  add(
-    "Appointment",
-    "Total appointments",
-    appointment.total_appointments ?? "",
-  );
-  (appointment.status_distribution || []).forEach((item) =>
-    add("Appointment", "Persisted appointment status", item.count, item.status),
-  );
-  addTrends("Appointment", "Daily trend", appointment.daily_trends);
-  addTrends("Appointment", "Weekly trend", appointment.weekly_trends);
-  addTrends("Appointment", "Monthly trend", appointment.monthly_trends);
-  (appointment.program_statistics || []).forEach((item) =>
-    add("Appointment", "Program appointments", item.count, item.program),
+  const priorityCounts = new Map();
+  cases.forEach((item) => {
+    const priority = item.priority || "low";
+    priorityCounts.set(priority, (priorityCounts.get(priority) || 0) + 1);
+  });
+  priorityCounts.forEach((value, priority) =>
+    rows.push(["Student case priority", priority, value]),
   );
 
-  const chatbot = reports.chatbot || {};
-  add(
-    "Chatbot",
-    "Total chatbot messages",
-    chatbot.total_chatbot_messages ?? "",
-  );
-  add(
-    "Chatbot",
-    "Conversation finalizations",
-    chatbot.conversation_finalization_count ?? "",
-  );
-  add("Chatbot", "Escalations", chatbot.escalation_count ?? "");
-  add(
-    "Chatbot",
-    "Average finalized conversation length",
-    chatbot.average_finalized_conversation_length ?? "",
-  );
-  (chatbot.persisted_emotion_result_distribution || []).forEach((item) =>
-    add("Chatbot", "Persisted emotion result", item.count, item.emotion_result),
-  );
-  const chatbotVolume = chatbot.message_volume || {};
-  addTrends("Chatbot", "Daily message volume", chatbotVolume.daily);
-  addTrends("Chatbot", "Weekly message volume", chatbotVolume.weekly);
-  addTrends("Chatbot", "Monthly message volume", chatbotVolume.monthly);
-
-  const workload = reports.workload || {};
-  [
-    ["Authorized appointments", workload.authorized_appointment_count],
-    ["Pending appointments", workload.pending_appointment_count],
-    ["Confirmed appointments", workload.confirmed_appointment_count],
-    ["Completed appointments", workload.completed_appointment_count],
-    ["Active referrals", workload.active_referral_count],
-    ["Active interventions", workload.active_intervention_count],
-    ["Completed interventions", workload.completed_intervention_count],
-  ].forEach(([metric, value]) =>
-    add("Counselor Workload", metric, value ?? ""),
-  );
-  (workload.workload_by_program || []).forEach((item) =>
-    add(
-      "Counselor Workload",
-      "Authorized program appointments",
-      item.count,
-      item.program,
-    ),
-  );
-
-  const flaggedCases = reports.flaggedCases || {};
-  [
-    ["Total flagged cases", flaggedCases.total_flagged_cases],
-    ["Pending flagged-case reviews", flaggedCases.pending_flagged_case_reviews],
-    ["Reviewed flagged cases", flaggedCases.reviewed_flagged_cases],
-    ["Referrals", flaggedCases.referral_count],
-    ["Interventions", flaggedCases.intervention_count],
-    [
-      "Current confidential cases",
-      flaggedCases.current_confidential_case_count,
-    ],
-  ].forEach(([metric, value]) => add("Flagged Case", metric, value ?? ""));
-  (flaggedCases.persisted_case_status_distribution || []).forEach((item) =>
-    add("Flagged Case", "Persisted case status", item.count, item.status),
-  );
-  const escalationTrends = flaggedCases.escalation_trends || {};
-  addTrends("Flagged Case", "Daily escalation trend", escalationTrends.daily);
-  addTrends("Flagged Case", "Weekly escalation trend", escalationTrends.weekly);
-  addTrends(
-    "Flagged Case",
-    "Monthly escalation trend",
-    escalationTrends.monthly,
+  const appointmentStatusCounts = new Map();
+  appointments.forEach((item) => {
+    const status = item.status || "pending";
+    appointmentStatusCounts.set(
+      status,
+      (appointmentStatusCounts.get(status) || 0) + 1,
+    );
+  });
+  appointmentStatusCounts.forEach((value, status) =>
+    rows.push(["Student appointment status", status, value]),
   );
 
   return rows;
@@ -4501,7 +4470,7 @@ function reportCsvRows() {
 function downloadReportsCsv() {
   const rows = reportCsvRows();
   if (!rows.length) {
-    createToast("Load reports before downloading CSV.", "info");
+    createToast("No Overview data is available to export.", "info");
     return;
   }
 
@@ -4510,7 +4479,7 @@ function downloadReportsCsv() {
   const link = document.createElement("a");
   const url = URL.createObjectURL(blob);
   link.href = url;
-  link.download = "guidance-analytics-report.csv";
+  link.download = "guidance-overview-summary.csv";
   link.click();
   URL.revokeObjectURL(url);
 }

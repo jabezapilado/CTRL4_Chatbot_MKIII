@@ -15,6 +15,11 @@ The format follows the principles of **Keep a Changelog**.
   added priority and appointment-status graphs; aggregate backend analytics
   remain available in the secondary report views. The overview now stays a
   concise summary, with detailed records handled in their dedicated workflows.
+- Added compact visual summaries to the Chatbot, Counselor Workload, and
+  Flagged Case report sections while preserving their detailed tables and CSV
+  export data.
+- Changed CSV export to download the Overview summary only, including student
+  counts and the distributions shown in the Overview graphs.
 - Consolidated crisis escalation messaging into the chatbot response so the
   student sees one clear reply that confirms counselor referral and follow-up;
   the duplicate escalation banner is no longer rendered separately.
