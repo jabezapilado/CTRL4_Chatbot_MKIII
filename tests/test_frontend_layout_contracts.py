@@ -242,10 +242,18 @@ class FrontendLayoutContractTests(unittest.TestCase):
 
     def test_reports_page_uses_scoped_compact_analytics_layout(self) -> None:
         template = _read("frontend/templates/dashboard.html")
+        dashboard = _read("frontend/static/js/dashboard.js")
         stylesheet = _read("frontend/static/css/dashboard.css")
 
         self.assertIn('id="view-reports"', template)
         self.assertIn('id="reports-overview-kpis"', template)
+        self.assertIn('id="reports-student-cases"', template)
+        self.assertIn('id="reports-student-appointments"', template)
+        self.assertIn('id="reports-case-priority-graph"', template)
+        self.assertIn('id="reports-appointment-status-graph"', template)
+        self.assertIn("function renderStudentReports()", dashboard)
+        self.assertIn("function renderStudentReportGraph", dashboard)
+        self.assertIn("Students needing counselor attention", template)
         self.assertIn('data-dashboard-section-nav="reports"', template)
         self.assertIn("#view-reports #reports-overview-kpis", stylesheet)
         self.assertIn("#view-reports .dashboard-section-nav", stylesheet)

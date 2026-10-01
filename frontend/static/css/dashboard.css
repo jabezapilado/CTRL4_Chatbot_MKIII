@@ -1433,6 +1433,86 @@ table.inquiry-table .table-empty-state {
   line-height: 1.45;
 }
 
+.reports-student-graphs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  padding: 0 20px 14px;
+}
+
+.reports-graph-panel {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  background: var(--gray-50);
+}
+
+.reports-graph-panel h3 {
+  margin: 0 0 12px;
+  color: var(--gray-800);
+  font-size: 13px;
+}
+
+.reports-bar-chart {
+  display: grid;
+  gap: 9px;
+}
+
+.reports-bar-row {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr) 28px;
+  align-items: center;
+  gap: 8px;
+  min-height: 22px;
+}
+
+.reports-bar-label,
+.reports-bar-value {
+  color: var(--gray-700);
+  font-size: 11px;
+}
+
+.reports-bar-value {
+  text-align: right;
+}
+
+.reports-bar-track {
+  display: block;
+  height: 9px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--gray-200);
+}
+
+.reports-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--orange);
+}
+
+.reports-bar-fill.critical {
+  background: var(--red, #b42318);
+}
+
+.reports-bar-fill.high {
+  background: var(--orange);
+}
+
+.reports-bar-fill.medium {
+  background: var(--gold);
+}
+
+.reports-bar-fill.low {
+  background: var(--green, #3f8f55);
+}
+
+.reports-student-tables {
+  display: grid;
+  gap: 14px;
+}
+
 #view-reports .panel > .action-row {
   padding: 0 20px 14px;
 }
@@ -3850,6 +3930,14 @@ table.inquiry-table .table-empty-state {
   }
   #view-reports .form-grid {
     grid-template-columns: minmax(0, 1fr);
+  }
+  .reports-student-graphs {
+    grid-template-columns: minmax(0, 1fr);
+    padding-right: 14px;
+    padding-left: 14px;
+  }
+  .reports-bar-row {
+    grid-template-columns: 66px minmax(0, 1fr) 24px;
   }
   #view-appointments .form-grid {
     grid-template-columns: minmax(0, 1fr);

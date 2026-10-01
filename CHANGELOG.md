@@ -10,6 +10,10 @@ The format follows the principles of **Keep a Changelog**.
 
 ### Changed
 
+- Refocused the Reports Overview on counselor-facing student records by adding
+  authorized student case and appointment tables with direct detail actions;
+  added priority and appointment-status graphs; aggregate backend analytics
+  remain available in the secondary report views.
 - Consolidated crisis escalation messaging into the chatbot response so the
   student sees one clear reply that confirms counselor referral and follow-up;
   the duplicate escalation banner is no longer rendered separately.

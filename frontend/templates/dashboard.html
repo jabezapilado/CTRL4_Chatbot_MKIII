@@ -977,32 +977,32 @@
           <div class="view" id="view-reports">
             <section class="stat-grid" id="reports-overview-kpis">
               <div class="stat-card">
-                <div class="stat-label">Authorized Appointments</div>
+                <div class="stat-label">Student Appointments</div>
                 <div class="stat-value" id="reports-overview-appointments">
                   —
                 </div>
-                <div class="stat-sub">Appointment Analytics</div>
+                <div class="stat-sub">Loaded authorized student records</div>
               </div>
               <div class="stat-card alert">
-                <div class="stat-label">Pending Flagged-Case Reviews</div>
+                <div class="stat-label">Students Needing Review</div>
                 <div class="stat-value" id="reports-overview-pending-cases">
                   —
                 </div>
-                <div class="stat-sub">Flagged Case Analytics</div>
+                <div class="stat-sub">Flagged student cases awaiting action</div>
               </div>
               <div class="stat-card">
-                <div class="stat-label">Chatbot Messages</div>
+                <div class="stat-label">Student Case Records</div>
                 <div class="stat-value" id="reports-overview-chatbot-messages">
                   —
                 </div>
-                <div class="stat-sub">Chatbot Analytics</div>
+                <div class="stat-sub">Flagged cases in your program scope</div>
               </div>
               <div class="stat-card">
-                <div class="stat-label">Active Referrals</div>
+                <div class="stat-label">Students With Referrals</div>
                 <div class="stat-value" id="reports-overview-active-referrals">
                   —
                 </div>
-                <div class="stat-sub">Counselor Workload Analytics</div>
+                <div class="stat-sub">Cases with active referral follow-up</div>
               </div>
             </section>
 
@@ -1062,9 +1062,63 @@
                 <h2>Reports &amp; Analytics Overview</h2>
               </div>
               <p class="sub">
-                Aggregate-only summary of the currently loaded authorized
-                analytics.
+                Student-related records for counselor follow-up. Backend
+                analytics remain available in the secondary report sections.
               </p>
+              <div class="reports-student-graphs">
+                <section class="reports-graph-panel">
+                  <h3>Student cases by priority</h3>
+                  <div
+                    class="reports-bar-chart"
+                    id="reports-case-priority-graph"
+                    role="img"
+                    aria-label="Student cases by priority"
+                  ></div>
+                </section>
+                <section class="reports-graph-panel">
+                  <h3>Student appointments by status</h3>
+                  <div
+                    class="reports-bar-chart"
+                    id="reports-appointment-status-graph"
+                    role="img"
+                    aria-label="Student appointments by status"
+                  ></div>
+                </section>
+              </div>
+              <div class="reports-student-tables">
+                <div class="table-wrap">
+                  <table class="inquiry-table" id="reports-student-cases-table">
+                    <caption>Students needing counselor attention</caption>
+                    <thead>
+                      <tr>
+                        <th>Student</th>
+                        <th>Program</th>
+                        <th>Concern</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody id="reports-student-cases"></tbody>
+                  </table>
+                </div>
+                <div class="table-wrap">
+                  <table class="inquiry-table" id="reports-student-appointments-table">
+                    <caption>Student appointments</caption>
+                    <thead>
+                      <tr>
+                        <th>Student</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Concern</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody id="reports-student-appointments"></tbody>
+                  </table>
+                </div>
+              </div>
               <div class="action-row">
                 <button
                   class="btn btn-outline btn-sm"

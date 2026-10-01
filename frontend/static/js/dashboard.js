@@ -3972,30 +3972,190 @@ function latestTrendRow(trends) {
   return rows.length ? rows[rows.length - 1] : null;
 }
 
+function appendStudentReportCell(row, value) {
+  const cell = document.createElement("td");
+  cell.textContent = String(value ?? "—");
+  row.appendChild(cell);
+}
+
+function renderStudentReportGraph(containerId, rows) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.replaceChildren();
+
+  if (!rows.length) {
+    const empty = document.createElement("p");
+    empty.className = "sub";
+    empty.textContent = "No student records are available.";
+    container.appendChild(empty);
+    return;
+  }
+
+  const maximum = Math.max(...rows.map((row) => row.value), 1);
+  rows.forEach((item) => {
+    const row = document.createElement("div");
+    row.className = "reports-bar-row";
+    const label = document.createElement("span");
+    label.className = "reports-bar-label";
+    label.textContent = item.label;
+    const track = document.createElement("span");
+    track.className = "reports-bar-track";
+    const bar = document.createElement("span");
+    bar.className = `reports-bar-fill ${item.tone || ""}`;
+    bar.style.width = `${Math.round((item.value / maximum) * 100)}%`;
+    bar.setAttribute("aria-hidden", "true");
+    track.appendChild(bar);
+    const value = document.createElement("strong");
+    value.className = "reports-bar-value";
+    value.textContent = String(item.value);
+    row.append(label, track, value);
+    container.appendChild(row);
+  });
+}
+
+function renderStudentReports() {
+  const caseTable = document.getElementById("reports-student-cases");
+  const appointmentTable = document.getElementById("reports-student-appointments");
+  if (!caseTable || !appointmentTable) return;
+
+  caseTable.replaceChildren();
+  appointmentTable.replaceChildren();
+
+  const cases = flaggedConversations
+    .filter((item) => item.flagged && item.status !== "reviewed")
+    .sort((left, right) => {
+      const priorityOrder = { critical: 4, high: 3, medium: 2, low: 1 };
+      return (
+        (priorityOrder[right.priority] || 0) -
+        (priorityOrder[left.priority] || 0)
+      );
+    });
+
+  if (!cases.length) {
+    appendTableEmptyState(
+      caseTable,
+      6,
+      "No student cases currently require counselor action.",
+    );
+  } else {
+    cases.forEach((item) => {
+      const row = document.createElement("tr");
+      appendStudentReportCell(row, `${item.studentName} (${item.studentNumber})`);
+      appendStudentReportCell(row, item.program);
+      appendStudentReportCell(row, item.category);
+      appendStudentReportCell(row, item.priority);
+      appendStudentReportCell(row, item.status);
+      const actionCell = document.createElement("td");
+      const action = document.createElement("button");
+      action.type = "button";
+      action.className = "action-link";
+      action.textContent = "Open case";
+      action.addEventListener("click", () => openInboxItem(item));
+      actionCell.appendChild(action);
+      row.appendChild(actionCell);
+      caseTable.appendChild(row);
+    });
+  }
+
+  const appointments = (window.backendAppointments || [])
+    .filter((item) => ["pending", "confirmed"].includes(item.status))
+    .sort((left, right) => `${left.date} ${left.time}`.localeCompare(`${right.date} ${right.time}`));
+
+  if (!appointments.length) {
+    appendTableEmptyState(
+      appointmentTable,
+      6,
+      "No pending or confirmed student appointments are available.",
+    );
+  } else {
+    appointments.forEach((item) => {
+      const row = document.createElement("tr");
+      appendStudentReportCell(row, `${item.student} (${item.studentNumber})`);
+      appendStudentReportCell(row, formatAppointmentDate(item.date));
+      appendStudentReportCell(row, formatAppointmentTime(item.time));
+      appendStudentReportCell(row, item.category || "General support");
+      appendStudentReportCell(row, item.status);
+      const actionCell = document.createElement("td");
+      const action = document.createElement("button");
+      action.type = "button";
+      action.className = "action-link";
+      action.textContent = "Open appointment";
+      action.addEventListener("click", () => openAppointmentDetails(item));
+      actionCell.appendChild(action);
+      row.appendChild(actionCell);
+      appointmentTable.appendChild(row);
+    });
+  }
+
+  const priorityCounts = new Map([
+    ["Critical", 0],
+    ["High", 0],
+    ["Medium", 0],
+    ["Low", 0],
+  ]);
+  cases.forEach((item) => {
+    const label = `${item.priority || "low"}`.replace(/^./, (character) =>
+      character.toUpperCase(),
+    );
+    priorityCounts.set(label, (priorityCounts.get(label) || 0) + 1);
+  });
+  renderStudentReportGraph(
+    "reports-case-priority-graph",
+    Array.from(priorityCounts, ([label, value]) => ({
+      label,
+      value,
+      tone: label.toLowerCase(),
+    })),
+  );
+
+  const appointmentStatusCounts = new Map();
+  appointments.forEach((item) => {
+    const label = `${item.status || "pending"}`.replace(/^./, (character) =>
+      character.toUpperCase(),
+    );
+    appointmentStatusCounts.set(
+      label,
+      (appointmentStatusCounts.get(label) || 0) + 1,
+    );
+  });
+  renderStudentReportGraph(
+    "reports-appointment-status-graph",
+    Array.from(appointmentStatusCounts, ([label, value]) => ({ label, value })),
+  );
+}
+
 function renderDashboardOverview() {
   const reports = reportsAnalytics;
+  renderStudentReports();
   if (!reports) return;
 
   const appointment = reports.appointment || {};
   const chatbot = reports.chatbot || {};
   const workload = reports.workload || {};
   const flaggedCases = reports.flaggedCases || {};
+  const studentAppointments = window.backendAppointments || [];
+  const reviewableCases = flaggedConversations.filter(
+    (item) => item.flagged && item.status !== "reviewed",
+  );
+  const referralCases = flaggedConversations.filter(
+    (item) => item.hasReferral && item.status !== "reviewed",
+  );
 
   overviewValue(
     "reports-overview-appointments",
-    appointment.total_appointments,
+    studentAppointments.length,
   );
   overviewValue(
     "reports-overview-pending-cases",
-    flaggedCases.pending_flagged_case_reviews,
+    reviewableCases.length,
   );
   overviewValue(
     "reports-overview-chatbot-messages",
-    chatbot.total_chatbot_messages,
+    flaggedConversations.length,
   );
   overviewValue(
     "reports-overview-active-referrals",
-    workload.active_referral_count,
+    referralCases.length,
   );
 
   appendReportRows("reports-overview-appointment-summary", [
