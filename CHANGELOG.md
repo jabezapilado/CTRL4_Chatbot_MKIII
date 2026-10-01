@@ -10,6 +10,9 @@ The format follows the principles of **Keep a Changelog**.
 
 ### Changed
 
+- Moved the Counselor Notes card to the top of the Case Details right-side
+  staff panel so counselors can record follow-up, referral, or action notes
+  before taking other case actions.
 - Removed the student-facing Case Status page and its API. Persisted case
   statuses are now available only through authorized Guidance staff case
   workflows.
