@@ -4015,12 +4015,9 @@ function renderStudentReportGraph(containerId, rows) {
 
 function renderStudentReports() {
   const caseTable = document.getElementById("reports-student-cases");
-  const appointmentTable = document.getElementById("reports-student-appointments");
-  if (!caseTable || !appointmentTable) return;
-
-  caseTable.replaceChildren();
-  appointmentTable.replaceChildren();
-
+  const appointmentTable = document.getElementById(
+    "reports-student-appointments",
+  );
   const cases = flaggedConversations
     .filter((item) => item.flagged && item.status !== "reviewed")
     .sort((left, right) => {
@@ -4031,60 +4028,70 @@ function renderStudentReports() {
       );
     });
 
-  if (!cases.length) {
-    appendTableEmptyState(
-      caseTable,
-      6,
-      "No student cases currently require counselor action.",
-    );
-  } else {
-    cases.forEach((item) => {
-      const row = document.createElement("tr");
-      appendStudentReportCell(row, `${item.studentName} (${item.studentNumber})`);
-      appendStudentReportCell(row, item.program);
-      appendStudentReportCell(row, item.category);
-      appendStudentReportCell(row, item.priority);
-      appendStudentReportCell(row, item.status);
-      const actionCell = document.createElement("td");
-      const action = document.createElement("button");
-      action.type = "button";
-      action.className = "action-link";
-      action.textContent = "Open case";
-      action.addEventListener("click", () => openInboxItem(item));
-      actionCell.appendChild(action);
-      row.appendChild(actionCell);
-      caseTable.appendChild(row);
-    });
-  }
-
   const appointments = (window.backendAppointments || [])
     .filter((item) => ["pending", "confirmed"].includes(item.status))
-    .sort((left, right) => `${left.date} ${left.time}`.localeCompare(`${right.date} ${right.time}`));
-
-  if (!appointments.length) {
-    appendTableEmptyState(
-      appointmentTable,
-      6,
-      "No pending or confirmed student appointments are available.",
+    .sort((left, right) =>
+      `${left.date} ${left.time}`.localeCompare(`${right.date} ${right.time}`),
     );
-  } else {
-    appointments.forEach((item) => {
-      const row = document.createElement("tr");
-      appendStudentReportCell(row, `${item.student} (${item.studentNumber})`);
-      appendStudentReportCell(row, formatAppointmentDate(item.date));
-      appendStudentReportCell(row, formatAppointmentTime(item.time));
-      appendStudentReportCell(row, item.category || "General support");
-      appendStudentReportCell(row, item.status);
-      const actionCell = document.createElement("td");
-      const action = document.createElement("button");
-      action.type = "button";
-      action.className = "action-link";
-      action.textContent = "Open appointment";
-      action.addEventListener("click", () => openAppointmentDetails(item));
-      actionCell.appendChild(action);
-      row.appendChild(actionCell);
-      appointmentTable.appendChild(row);
-    });
+
+  if (caseTable && appointmentTable) {
+    caseTable.replaceChildren();
+    appointmentTable.replaceChildren();
+
+    if (!cases.length) {
+      appendTableEmptyState(
+        caseTable,
+        6,
+        "No student cases currently require counselor action.",
+      );
+    } else {
+      cases.forEach((item) => {
+        const row = document.createElement("tr");
+        appendStudentReportCell(
+          row,
+          `${item.studentName} (${item.studentNumber})`,
+        );
+        appendStudentReportCell(row, item.program);
+        appendStudentReportCell(row, item.category);
+        appendStudentReportCell(row, item.priority);
+        appendStudentReportCell(row, item.status);
+        const actionCell = document.createElement("td");
+        const action = document.createElement("button");
+        action.type = "button";
+        action.className = "action-link";
+        action.textContent = "Open case";
+        action.addEventListener("click", () => openInboxItem(item));
+        actionCell.appendChild(action);
+        row.appendChild(actionCell);
+        caseTable.appendChild(row);
+      });
+    }
+
+    if (!appointments.length) {
+      appendTableEmptyState(
+        appointmentTable,
+        6,
+        "No pending or confirmed student appointments are available.",
+      );
+    } else {
+      appointments.forEach((item) => {
+        const row = document.createElement("tr");
+        appendStudentReportCell(row, `${item.student} (${item.studentNumber})`);
+        appendStudentReportCell(row, formatAppointmentDate(item.date));
+        appendStudentReportCell(row, formatAppointmentTime(item.time));
+        appendStudentReportCell(row, item.category || "General support");
+        appendStudentReportCell(row, item.status);
+        const actionCell = document.createElement("td");
+        const action = document.createElement("button");
+        action.type = "button";
+        action.className = "action-link";
+        action.textContent = "Open appointment";
+        action.addEventListener("click", () => openAppointmentDetails(item));
+        actionCell.appendChild(action);
+        row.appendChild(actionCell);
+        appointmentTable.appendChild(row);
+      });
+    }
   }
 
   const priorityCounts = new Map([
@@ -4125,14 +4132,7 @@ function renderStudentReports() {
 }
 
 function renderDashboardOverview() {
-  const reports = reportsAnalytics;
   renderStudentReports();
-  if (!reports) return;
-
-  const appointment = reports.appointment || {};
-  const chatbot = reports.chatbot || {};
-  const workload = reports.workload || {};
-  const flaggedCases = reports.flaggedCases || {};
   const studentAppointments = window.backendAppointments || [];
   const reviewableCases = flaggedConversations.filter(
     (item) => item.flagged && item.status !== "reviewed",
@@ -4141,104 +4141,13 @@ function renderDashboardOverview() {
     (item) => item.hasReferral && item.status !== "reviewed",
   );
 
-  overviewValue(
-    "reports-overview-appointments",
-    studentAppointments.length,
-  );
-  overviewValue(
-    "reports-overview-pending-cases",
-    reviewableCases.length,
-  );
+  overviewValue("reports-overview-appointments", studentAppointments.length);
+  overviewValue("reports-overview-pending-cases", reviewableCases.length);
   overviewValue(
     "reports-overview-chatbot-messages",
     flaggedConversations.length,
   );
-  overviewValue(
-    "reports-overview-active-referrals",
-    referralCases.length,
-  );
-
-  appendReportRows("reports-overview-appointment-summary", [
-    [
-      "Total appointments",
-      displayAggregateValue(appointment.total_appointments),
-    ],
-    ...(appointment.status_distribution || []).map((item) => [
-      `Persisted appointment status: ${item.status}`,
-      item.count,
-    ]),
-  ]);
-  appendReportRows("reports-overview-chatbot-summary", [
-    [
-      "Total chatbot messages",
-      displayAggregateValue(chatbot.total_chatbot_messages),
-    ],
-    [
-      "Conversation finalizations",
-      displayAggregateValue(chatbot.conversation_finalization_count),
-    ],
-    ["Escalations", displayAggregateValue(chatbot.escalation_count)],
-  ]);
-  appendReportRows("reports-overview-workload-summary", [
-    [
-      "Authorized appointments",
-      displayAggregateValue(workload.authorized_appointment_count),
-    ],
-    [
-      "Pending appointments",
-      displayAggregateValue(workload.pending_appointment_count),
-    ],
-    [
-      "Confirmed appointments",
-      displayAggregateValue(workload.confirmed_appointment_count),
-    ],
-    [
-      "Completed appointments",
-      displayAggregateValue(workload.completed_appointment_count),
-    ],
-    ["Active referrals", displayAggregateValue(workload.active_referral_count)],
-    [
-      "Active interventions",
-      displayAggregateValue(workload.active_intervention_count),
-    ],
-    [
-      "Completed interventions",
-      displayAggregateValue(workload.completed_intervention_count),
-    ],
-  ]);
-  appendReportRows("reports-overview-flagged-case-summary", [
-    [
-      "Total flagged cases",
-      displayAggregateValue(flaggedCases.total_flagged_cases),
-    ],
-    [
-      "Pending flagged-case reviews",
-      displayAggregateValue(flaggedCases.pending_flagged_case_reviews),
-    ],
-    [
-      "Reviewed flagged cases",
-      displayAggregateValue(flaggedCases.reviewed_flagged_cases),
-    ],
-    [
-      "Current confidential cases",
-      displayAggregateValue(flaggedCases.current_confidential_case_count),
-    ],
-  ]);
-
-  const recentActivity = [
-    ["Appointment activity", latestTrendRow(appointment.daily_trends)],
-    [
-      "Chatbot message activity",
-      latestTrendRow((chatbot.message_volume || {}).daily),
-    ],
-    [
-      "Flagged-case escalation activity",
-      latestTrendRow((flaggedCases.escalation_trends || {}).daily),
-    ],
-  ]
-    .filter(([, trend]) => trend)
-    .map(([label, trend]) => [`${label}: ${trend.date}`, trend.count]);
-  appendReportRows("reports-overview-recent-activity", recentActivity);
+  overviewValue("reports-overview-active-referrals", referralCases.length);
 }
 
 function navigateOverview(target) {

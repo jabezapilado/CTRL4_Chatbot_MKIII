@@ -1513,6 +1513,23 @@ table.inquiry-table .table-empty-state {
   gap: 14px;
 }
 
+.reports-summary-note {
+  display: grid;
+  gap: 4px;
+  margin: 0 20px 14px;
+  padding: 12px 14px;
+  border-left: 3px solid var(--orange);
+  background: var(--gold-pale);
+  color: var(--gray-700);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.reports-summary-note strong {
+  color: var(--gray-900);
+  font-size: 12.5px;
+}
+
 #view-reports .panel > .action-row {
   padding: 0 20px 14px;
 }
