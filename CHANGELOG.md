@@ -10,6 +10,8 @@ The format follows the principles of **Keep a Changelog**.
 
 ### Changed
 
+- Simplified the Staff Action card and moved the **Mark Reviewed** control to
+  the bottom-right below its Guidance Office notice.
 - Kept Staff Actions independent in the right-side panel, reduced the main
   Case Details navigation to Overview and Conversation, and made Privacy,
   Referrals, and Interventions the independent Case Records controls.

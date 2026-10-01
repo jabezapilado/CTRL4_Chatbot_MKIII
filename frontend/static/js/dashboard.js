@@ -5187,7 +5187,7 @@ async function openFlaggedConversationDetails(
       card.dataset.caseRecordAvailable = "true";
     });
     configureCaseDetailsTabs(true);
-    reviewButton.textContent = "Mark as Reviewed";
+    reviewButton.textContent = "Mark Reviewed";
     reviewButton.disabled = detail.escalation_status === "reviewed";
     reviewButton.classList.toggle("disabled", reviewButton.disabled);
     reviewButton.onclick = async () => {

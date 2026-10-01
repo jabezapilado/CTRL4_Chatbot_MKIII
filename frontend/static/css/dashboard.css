@@ -2922,6 +2922,25 @@ table.inquiry-table .table-empty-state {
   line-height: 1.25;
 }
 
+#view-case-details .case-actions-card {
+  display: flex;
+  min-height: 160px;
+  flex-direction: column;
+}
+
+.case-action-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 12px;
+}
+
+.case-action-footer .btn {
+  min-width: 132px;
+  justify-content: center;
+}
+
 .case-actions-card .sub {
   font-size: 11.5px;
   color: var(--gray-400);
