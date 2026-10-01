@@ -8,6 +8,16 @@ The format follows the principles of **Keep a Changelog**.
 
 ## [Unreleased]
 
+### Changed
+
+- Removed the student-facing Case Status page and its API. Persisted case
+  statuses are now available only through authorized Guidance staff case
+  workflows.
+- Flagged conversations now retain their server-owned transcript for
+  authorized, program-scoped Guidance staff review. Routine conversation
+  transcripts remain temporary, and students and administrators cannot access
+  retained flagged-case transcripts.
+
 ### Added
 
 - Added an administrator-only student-account CSV import workflow for Guidance

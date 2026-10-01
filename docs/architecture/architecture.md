@@ -71,7 +71,7 @@ The Flask application is created in `backend/app.py` through
 
 | Role | Authorized responsibilities | Explicit boundary |
 | --- | --- | --- |
-| **Student** | Sign in, accept Terms and Conditions, use the chatbot, submit optional reply feedback, manage own appointments, view own privacy-safe status, and read own notifications. | Cannot view other students, staff records, internal notes, prompts, raw retained chat records, or operational configuration. |
+| **Student** | Sign in, accept Terms and Conditions, use the chatbot, submit optional reply feedback, manage own appointments, and read own notifications. | Cannot view other students, staff records, internal notes, prompts, raw retained chat records, or operational configuration. |
 | **Guidance staff** | Review authorized program-scoped inbox and flagged cases, record case actions, manage routed appointments, view reports, review feedback, and manage approved office or personal staff settings. | Access is program-scoped and does not grant unrestricted student or staff data access. |
 | **Administrator (ITSS)** | Manage accounts, credentials, roles, activation status, and the program catalog. | Does not receive counseling, escalation, appointment, raw conversation, case-summary, or Guidance Office workflow authority. |
 
@@ -87,9 +87,10 @@ by the backend.
 ### 4.1 Student chatbot and appointment experience
 
 The student-facing interface provides the authenticated chat, optional reply
-feedback, case-status view, notifications, and appointment actions. The
-appointment workflow supports booking, viewing, rescheduling, and cancelling
-only the student's own appointments. Counselor routing is dynamic and
+feedback, notifications, and appointment actions. Case statuses remain in the
+authorized Guidance staff workflow. The appointment workflow supports booking,
+viewing, rescheduling, and cancelling only the student's own appointments.
+Counselor routing is dynamic and
 program-based; CTRL4 does not persist a default counselor as the owner of each
 student.
 
@@ -101,9 +102,10 @@ completion, session replacement, or the server-owned idle finalizer, CTRL4
 updates the same reviewable item with a counselor-oriented AI summary and
 approved metadata rather than creating a duplicate.
 
-Staff see privacy-safe summary projections. Raw chat history is temporary and
-is cleared after conversation finalization; it is not exposed through student
-or staff APIs. Pending flagged cases remain visible to authorized staff until
+Staff see privacy-safe summary projections. Raw chat history is temporary for
+routine conversations; a flagged conversation's transcript is retained and
+available only through its authorized staff case-detail API. It is never
+exposed to students. Pending flagged cases remain visible to authorized staff until
 reviewed. Reviewed flagged history remains available without changing the
 ordinary Inbox workflow.
 
@@ -167,15 +169,16 @@ with `backend/server/db.py`. Its principal entities include:
 | **Conversation review** | `inquiries`, `conversation_summaries`, `escalations`, `case_notes` | Reviewable conversation metadata, summaries, flags, and authorized follow-up. |
 | **Case actions** | `referrals`, `referral_notes`, `referral_status_history`, `interventions`, `intervention_history`, `case_confidentiality`, `case_confidentiality_history` | Guidance Office case-management and confidentiality actions. |
 | **Student support** | `appointments`, `notifications` | Appointment lifecycle and recipient-scoped in-app notices. |
+| **Flagged transcripts** | `flagged_conversation_transcripts` | Server-owned raw student and assistant messages for one flagged case; exposed only to authorized Guidance staff in the case-detail workflow. |
 | **Quality feedback** | `chatbot_feedback` | Student rating category, optional note, safe reply-context category, and response hash; it does not retain raw student messages or AI reply text. |
 
 Privacy is implemented through minimum disclosure and service-owned
 projections:
 
-- The system does not make raw student chat transcripts durable after
-  finalization and never returns them to staff dashboard APIs.
-- Staff work from authorized summaries, risk metadata, and documented case
-  actions rather than unrestricted chat contents.
+- The system retains raw transcripts only for flagged cases and returns them
+  only through the authorized, program-scoped staff case-detail API.
+- Staff work from authorized summaries, risk metadata, retained flagged-case
+  transcripts, and documented case actions.
 - Notification records are recipient-scoped and are explicitly marked read.
 - Feedback records do not store raw chat transcripts or full generated replies.
 - Administrators are excluded from guidance-specific data and workflow views.
@@ -270,7 +273,7 @@ CTRL4_Chatbot/
   supported topology is one application instance until an approved shared
   session backend is introduced.
 - New external notification channels, background reminder workflows,
-  persistent raw-transcript retention, or administrator access to guidance
+  raw-transcript retention outside flagged cases, or administrator access to guidance
   records are outside the current architecture.
 
 ## 10. Related documentation

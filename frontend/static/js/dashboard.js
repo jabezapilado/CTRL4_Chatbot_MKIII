@@ -4892,6 +4892,9 @@ async function openRoutineInboxDetails(conversation, detail) {
   );
   const badge = document.getElementById("case-badge");
   const staffActionsNote = document.getElementById("case-staff-actions-note");
+  const transcriptCard = document.getElementById("case-transcript-card");
+  transcriptCard.hidden = true;
+  document.getElementById("case-transcript-list").replaceChildren();
 
   document.getElementById("case-avatar").textContent = initials(
     detail.student_name || "Student",
@@ -4975,6 +4978,32 @@ function applySafetyRisk(detail) {
   element.textContent = risk.label;
 }
 
+function renderFlaggedConversationTranscript(items) {
+  const card = document.getElementById("case-transcript-card");
+  const list = document.getElementById("case-transcript-list");
+  list.replaceChildren();
+  card.hidden = false;
+
+  if (!items.length) {
+    const empty = document.createElement("p");
+    empty.className = "sub";
+    empty.textContent = "No retained transcript is available for this flagged case.";
+    list.appendChild(empty);
+    return;
+  }
+
+  items.forEach((item) => {
+    const entry = document.createElement("article");
+    entry.className = "case-transcript-entry";
+    const speaker = document.createElement("strong");
+    speaker.textContent = item.role === "student" ? "Student" : "CTRL4 Assistant";
+    const content = document.createElement("p");
+    content.textContent = item.content || "";
+    entry.append(speaker, content);
+    list.appendChild(entry);
+  });
+}
+
 async function openFlaggedConversationDetails(
   conversation,
   inboxDetail = null,
@@ -5019,7 +5048,7 @@ async function openFlaggedConversationDetails(
     const removeConfidentialityButton = document.getElementById(
       "remove-case-confidential-btn",
     );
-    const [notesResponse, referralsResponse, interventionsResponse, confidentialityResponse, historyResponse] =
+    const [notesResponse, referralsResponse, interventionsResponse, confidentialityResponse, historyResponse, transcriptResponse] =
       await Promise.all([
         fetchJson(`${API_BASE}/api/flagged-conversations/${conversation.id}/notes`),
         fetchJson(`${API_BASE}/api/flagged-conversations/${conversation.id}/referrals`),
@@ -5029,10 +5058,15 @@ async function openFlaggedConversationDetails(
           `${API_BASE}/api/staff/inbox/${encodeURIComponent(conversation.id)}/history`,
           { cache: "no-store" },
         ),
+        fetchJson(
+          `${API_BASE}/api/flagged-conversations/${conversation.id}/transcript`,
+          { cache: "no-store" },
+        ),
       ]);
     const notes = notesResponse.data?.items || [];
     const referrals = referralsResponse.data?.items || [];
     const interventions = interventionsResponse.data?.items || [];
+    const transcript = transcriptResponse.data?.items || [];
     let confidentiality = confidentialityResponse.data;
     let editingNoteId = null;
 
@@ -5071,6 +5105,7 @@ async function openFlaggedConversationDetails(
       detail.escalation_reason || "AI safety escalation.";
     document.getElementById("case-status-label").textContent =
       detail.escalation_status === "reviewed" ? "Reviewed" : "Pending review";
+    renderFlaggedConversationTranscript(transcript);
 
     const badge = document.getElementById("case-badge");
     const staffActionsNote = document.getElementById("case-staff-actions-note");

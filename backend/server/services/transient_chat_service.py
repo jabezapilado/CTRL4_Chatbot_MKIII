@@ -13,6 +13,7 @@ from .conversation_history import (
     MAX_HISTORY_MESSAGE_CHARACTERS,
     MAX_HISTORY_MESSAGES,
     normalize_conversation_history,
+    transcript_conversation_evidence,
 )
 
 
@@ -52,7 +53,21 @@ class TransientChatService:
         key = self._cache_key(session_id, account_id)
         if key is None:
             return []
-        return self._visible_entries(self._cache.get(key))
+        return self._visible_entries(self._visible_cache_entries(self._cache.get(key)))
+
+    def get_transcript_history(
+        self,
+        session_id: object,
+        account_id: object,
+    ) -> list[dict[str, str]]:
+        """Return raw server-captured entries for flagged-case retention only."""
+        key = self._cache_key(session_id, account_id)
+        if key is None:
+            return []
+        stored = self._cache.get(key)
+        if isinstance(stored, dict):
+            return transcript_conversation_evidence(stored.get("transcript"))
+        return transcript_conversation_evidence(stored)
 
     def prior_history(
         self,
@@ -93,7 +108,25 @@ class TransientChatService:
                 ]
             )
         )
-        self._cache.set(key, self._visible_entries(canonical), timeout=self._timeout_seconds)
+        transcript = self.get_transcript_history(session_id, account_id)
+        if not transcript:
+            transcript = transcript_conversation_evidence(prior_history)
+        transcript.extend(
+            transcript_conversation_evidence(
+                [
+                    {"role": "user", "content": str(user_message)},
+                    {"role": "assistant", "content": str(assistant_message)},
+                ]
+            )
+        )
+        self._cache.set(
+            key,
+            {
+                "visible": self._visible_entries(canonical),
+                "transcript": transcript_conversation_evidence(transcript),
+            },
+            timeout=self._timeout_seconds,
+        )
 
     def clear(self, session_id: object, account_id: object) -> None:
         key = self._cache_key(session_id, account_id)
@@ -113,6 +146,12 @@ class TransientChatService:
             }
             for item in normalize_conversation_history(entries)
         ]
+
+    @staticmethod
+    def _visible_cache_entries(entries: object) -> object:
+        if isinstance(entries, dict):
+            return entries.get("visible", [])
+        return entries
 
     @staticmethod
     def _cache_key(session_id: object, account_id: object) -> str | None:

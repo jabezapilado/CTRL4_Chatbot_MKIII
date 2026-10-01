@@ -17,6 +17,7 @@ from ..services.conversation_service import (
     mark_active_conversation_for_staff_review,
     mark_active_conversation_for_immediate_review,
     record_chat_inquiry,
+    save_flagged_case_transcript,
     should_escalate_conversation,
 )
 
@@ -326,6 +327,17 @@ def chat():
                 int(session[_ACTIVE_SUMMARY_SESSION_KEY]),
                 user["id"],
                 escalation_reason,
+            )
+        if bool(
+            session.get(_ESCALATION_SESSION_KEY)
+            or session.get(_REVIEW_FLAG_SESSION_KEY)
+        ):
+            save_flagged_case_transcript(
+                int(session[_ACTIVE_SUMMARY_SESSION_KEY]),
+                transient_chat_service.get_transcript_history(
+                    _opaque_session_id(),
+                    user.get("id"),
+                ),
             )
         if str(user.get("role", "")).lower() == "student":
             student_session_service.update_conversation_context(

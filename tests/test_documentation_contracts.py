@@ -64,6 +64,7 @@ class DocumentationContractTests(unittest.TestCase):
             "/api/escalations",
             "/api/flagged-conversations",
             "/api/flagged-conversations/<summary_id>",
+            "/api/flagged-conversations/<summary_id>/transcript",
             "/api/flagged-conversations/<summary_id>/review",
             "/api/flagged-conversations/<summary_id>/confidentiality",
             "/api/flagged-conversations/<summary_id>/notes",
@@ -74,7 +75,6 @@ class DocumentationContractTests(unittest.TestCase):
             "/api/flagged-conversations/<summary_id>/interventions",
             "/api/flagged-conversations/<summary_id>/interventions/<intervention_id>/progress",
             "/api/flagged-conversations/<summary_id>/interventions/<intervention_id>/outcome",
-            "/api/student/cases",
             "/api/dashboard/appointments/analytics",
             "/api/dashboard/chatbot/analytics",
             "/api/dashboard/counselor-workload",
@@ -112,7 +112,7 @@ class DocumentationContractTests(unittest.TestCase):
             with self.subTest(claim=claim):
                 self.assertNotIn(claim, current)
 
-        self.assertIn("not persisted as a transcript", current)
+        self.assertIn("retained only for flagged cases", current)
         self.assertIn("client-side CSV", current)
 
     def test_documentation_index_uses_current_locations(self) -> None:

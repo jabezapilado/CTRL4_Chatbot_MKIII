@@ -36,8 +36,11 @@ it does not book, move, resize, or link replacement appointments.
 The dashboard Inbox shows one current privacy-safe summary item per
 student/case priority. Flagged Cases shows active pending flagged cases, and
 Reviewed Case History retains authorized reviewed records. Staff views do not
-expose raw chat transcripts. In Case Details, read Detected Emotion and Safety
-Risk as separate fields.
+expose raw chat transcripts for routine conversations. In a flagged case's
+Case Details, the **Conversation Transcript** panel contains the server-captured
+student and CTRL4 messages so you can verify the escalation context. This panel
+is limited to your authorized programs and must be used only for the Guidance
+Office review. Read Detected Emotion and Safety Risk as separate fields.
 
 The Inbox and Flagged Cases tables show 7 records per page because their
 summary rows can be longer. Chatbot Feedback, analytics, and report tables

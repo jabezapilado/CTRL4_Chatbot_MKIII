@@ -39,9 +39,11 @@ released emotion model is English-focused. Do not interpret Filipino/Taglish
 emotion handling as equivalent to a separately validated Filipino or Taglish
 emotion model.
 
-Your active chat is used while you converse and for finalization; raw chat
-transcript/history is not permanently stored. Do not enter information you do
-not need the Guidance Office to handle.
+Your active chat is used while you converse and for finalization. If it is
+flagged for Guidance Office review, the server retains its transcript so an
+authorized counselor can assess the context of the concern. Routine
+conversations do not receive this retained transcript. Do not enter
+information you do not need the Guidance Office to handle.
 
 Send one message at a time. While CTRL4 is preparing an ordinary reply, the
 message field, **Send** button, and quick-reply buttons are briefly unavailable.
@@ -78,21 +80,17 @@ your own pending appointment and only before the one-hour modification
 deadline. Rescheduling creates a replacement appointment first and cancels the
 old one only after the replacement succeeds.
 
-## Notifications and case status
+## Notifications
 
 The notifications panel shows only your own in-app notifications. It opens from
 the bell as a popover above the chat header. Opening an appointment notification
 marks it as read and takes you to **My Appointments**. Notifications are not
 sent by email or SMS.
 
-The **Case Status** page shows only the approved generic progress/status of
-your own eligible case. It does not display counselor notes, summaries,
-escalation reasons, referrals, interventions, confidentiality information, or
-internal identifiers.
-
 ## Privacy and common messages
 
-Staff-only counseling records are not available to student accounts. Common
+Case statuses and all counseling records are available only to authorized
+Guidance staff; they are not available to student accounts. Common
 messages include **Login required**, **Student access required**, validation
 messages for incomplete forms, and the exact schedule-conflict message above.
 If a request fails, correct only the field/message shown and try again; do not

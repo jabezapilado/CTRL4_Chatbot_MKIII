@@ -252,20 +252,10 @@ class SystemRuntimeIntegrationTests(unittest.TestCase):
         self.assertEqual(flagged["data"]["items"], [inbox_item])
         self.assertNotIn("conversation_json", inbox_item)
 
-    def test_student_case_projection_and_staff_case_modules_are_role_isolated(self) -> None:
+    def test_case_modules_are_staff_only(self) -> None:
         from backend.server.routes import conversation_routes
 
-        student_case = {
-            "case_status": "Submitted",
-            "submitted_at": "2026-01-01T09:00:00",
-            "updated_at": "2026-01-01T09:00:00",
-            "progress_text": "Your case has been received by the Guidance Office.",
-        }
         with patch.object(
-            conversation_routes,
-            "list_student_cases",
-            return_value=[student_case],
-        ), patch.object(
             conversation_routes,
             "get_staff_case_confidentiality",
             return_value={"status": "confidential"},
@@ -282,12 +272,14 @@ class SystemRuntimeIntegrationTests(unittest.TestCase):
             "list_staff_interventions",
             return_value=[],
         ):
-            student_payload = self._assert_envelope(
-                self._client_for("student").get("/api/student/cases"),
-                200,
+            self.assertEqual(
+                self._client_for("student").get("/api/student/cases").status_code,
+                404,
             )
-            self.assertEqual(student_payload["data"]["items"], [student_case])
-            self.assertNotIn("account_id", student_payload["data"]["items"][0])
+            self.assertEqual(
+                self._client_for("student").get("/case-status").status_code,
+                404,
+            )
 
             self._assert_envelope(
                 self._client_for("student").get(

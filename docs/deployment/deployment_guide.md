@@ -86,7 +86,8 @@ phone sleeps. Production therefore runs a small **VPS-local** timer every
 minute. It finalizes a student conversation only after the configured period
 without a completed chat exchange (20 minutes by default), preserves the
 existing final summary and escalation workflow, clears the active student
-lease, and never makes a transcript durable.
+lease, and retains a transcript only when the conversation is flagged for
+authorized Guidance Office review.
 
 The internal endpoint is bound to Gunicorn's loopback listener and requires a
 private header value. Set a dedicated value in the VPS-only `backend/.env`

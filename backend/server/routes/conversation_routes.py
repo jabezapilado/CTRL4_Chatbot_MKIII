@@ -25,10 +25,10 @@ from ..services.confidentiality_service import (
 )
 from ..services.conversation_service import (
     get_staff_inbox_item,
+    get_staff_flagged_case_transcript,
     list_staff_flagged_case_items,
     list_staff_inbox_items,
     list_staff_reviewed_case_history,
-    list_student_cases,
     list_staff_conversation_summaries,
     list_staff_escalations,
     list_staff_chatbot_feedback,
@@ -299,31 +299,6 @@ def flagged_conversations():
         ), 500
 
 
-@conversation_bp.get("/student/cases")
-def student_cases():
-    user, error = require_role("student")
-    if error:
-        return error
-    try:
-        items = list_student_cases(user)
-        return jsonify(
-            {
-                "success": True,
-                "message": "Case statuses retrieved successfully.",
-                "data": {"items": items},
-            }
-        ), 200
-    except Exception:
-        logger.exception("Failed to retrieve student case statuses.")
-        return jsonify(
-            {
-                "success": False,
-                "message": "Internal server error.",
-                "errors": None,
-            }
-        ), 500
-
-
 @conversation_bp.get("/flagged-conversations/<int:summary_id>")
 def flagged_conversation(summary_id: int):
     user, error = require_role("staff")
@@ -342,6 +317,44 @@ def flagged_conversation(summary_id: int):
         ), 200
     except Exception:
         logger.exception("Failed to retrieve flagged conversation %s.", summary_id)
+        return jsonify(
+            {
+                "success": False,
+                "message": "Internal server error.",
+                "errors": None,
+            }
+        ), 500
+
+
+@conversation_bp.get("/flagged-conversations/<int:summary_id>/transcript")
+def flagged_conversation_transcript(summary_id: int):
+    user, error = require_role("staff")
+    if error:
+        return error
+    try:
+        transcript = get_staff_flagged_case_transcript(user, summary_id)
+        if transcript is None:
+            return jsonify(
+                {
+                    "success": False,
+                    "message": "Flagged conversation not found.",
+                    "errors": None,
+                }
+            ), 404
+        response = jsonify(
+            {
+                "success": True,
+                "message": "Flagged conversation transcript retrieved successfully.",
+                "data": {"items": transcript},
+            }
+        )
+        response.headers["Cache-Control"] = "no-store"
+        return response, 200
+    except Exception:
+        logger.exception(
+            "Failed to retrieve flagged conversation transcript for %s.",
+            summary_id,
+        )
         return jsonify(
             {
                 "success": False,

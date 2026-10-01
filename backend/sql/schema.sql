@@ -74,6 +74,21 @@ CREATE TABLE IF NOT EXISTS conversation_summaries (
     INDEX idx_conversation_summaries_created (created_at)
 );
 
+-- Raw transcripts are retained only after a conversation is flagged for
+-- authorized Guidance Office review. Routine conversations have no durable
+-- transcript record.
+CREATE TABLE IF NOT EXISTS flagged_conversation_transcripts (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    conversation_summary_id INT NOT NULL UNIQUE,
+    transcript_json MEDIUMTEXT NOT NULL,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL,
+    FOREIGN KEY (conversation_summary_id)
+    REFERENCES conversation_summaries(id)
+    ON DELETE CASCADE,
+    INDEX idx_flagged_transcripts_summary (conversation_summary_id)
+);
+
 CREATE TABLE IF NOT EXISTS escalations (
     id INT AUTO_INCREMENT PRIMARY KEY,
     account_id INT NULL,

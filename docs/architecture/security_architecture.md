@@ -14,11 +14,11 @@ checks are presentation only.
 ### Students
 
 Students may use their own session/profile, chatbot, own appointments,
-permitted cancellation/replacement rescheduling, own notifications, and the
-approved generic case-status view. They must not receive counselor notes, case
-notes, referrals, interventions, confidentiality records or reasons,
-escalation reasons, conversation summaries, staff analytics, or internal
-identifiers. A student must explicitly accept the Terms and Conditions in the
+permitted cancellation/replacement rescheduling, and own notifications. They
+must not receive case statuses, counselor notes, case notes, referrals,
+interventions, confidentiality records or reasons, escalation reasons,
+conversation summaries, staff analytics, or internal identifiers. A student
+must explicitly accept the Terms and Conditions in the
 current server session before `/chat` is available; missing, false, or expired
 acceptance is rejected server-side. This gate does not apply to staff or
 administrator dashboards.
@@ -87,15 +87,18 @@ authenticated mutation.
 
 ## Data and conversation privacy
 
-Services own privacy projection. Raw chat transcript/history is temporary and
-is not permanently stored; `conversation_summaries.transcript_json` is not a
-current persisted field. Finalized counselor summaries, approved metadata, and
-case-management records are protected staff data. Student case status exposes
-only approved generic fields.
+Services own privacy projection. Raw chat transcript/history is temporary for
+routine conversations; flagged-case transcripts are stored separately in
+`flagged_conversation_transcripts` for authorized, program-scoped Guidance
+staff review. `conversation_summaries.transcript_json` is not a current
+persisted field. Finalized counselor summaries, approved metadata, and
+case-management records, including case statuses, are protected staff data.
 
 Protected chat content—including raw messages, generated replies, prompts,
-history, summaries, case data, and escalation reasons—is not logged. The
-browser does not persist raw chat or escalation content in `localStorage` or
+history, summaries, case data, and escalation reasons—is not logged. Raw
+messages and generated replies are retained only for flagged cases and only
+made available to authorized staff in the existing program-scoped case review.
+The browser does not persist raw chat or escalation content in `localStorage` or
 `sessionStorage`; obsolete protected keys are cleared when the chatbot starts.
 
 Chatbot feedback is a separate, CSRF-protected student mutation. The browser

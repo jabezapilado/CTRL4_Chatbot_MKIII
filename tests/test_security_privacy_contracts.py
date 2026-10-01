@@ -56,7 +56,6 @@ class SecurityPrivacyContractTests(unittest.TestCase):
         for template_name in (
             "login.html",
             "chatbot.html",
-            "case_status.html",
             "appointment.html",
             "dashboard.html",
             "admin.html",
@@ -68,6 +67,7 @@ class SecurityPrivacyContractTests(unittest.TestCase):
 
         chatbot_template = _source("frontend/templates/chatbot.html")
         self.assertIn('data-student-session-monitor="true"', chatbot_template)
+        self.assertNotIn('href="/case-status"', chatbot_template)
 
         self.assertIn('@auth_bp.get("/auth/session-status")', auth)
 
@@ -128,6 +128,8 @@ class SecurityPrivacyContractTests(unittest.TestCase):
         self.assertIn("previewText.textContent = item.summary", dashboard)
         self.assertIn("function openInboxItem", dashboard)
         self.assertNotIn("conversation_json", dashboard)
+        self.assertIn("function renderFlaggedConversationTranscript", dashboard)
+        self.assertIn("content.textContent = item.content || \"\"", dashboard)
         self.assertIn("cell.textContent = value", dashboard)
 
         # Persisted case-management values use textContent / DOM construction.

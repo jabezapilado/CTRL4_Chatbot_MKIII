@@ -135,7 +135,7 @@ Dynamic data in appointment, student, notification, and conversation rendering m
 
 ## Frozen Conversation Intelligence and privacy — Sprint 6
 
-Conversation persistence/finalization and privacy projection are service-owned by `conversation_service.py`. Staff views exclude internal linkage fields such as account IDs and escalation summary IDs. Conversation summaries are structured, counselor-oriented, confidential, non-diagnostic, and do not rewrite raw conversation history.
+Conversation persistence/finalization and privacy projection are service-owned by `conversation_service.py`. Staff views exclude internal linkage fields such as account IDs and escalation summary IDs. Conversation summaries are structured, counselor-oriented, confidential, and non-diagnostic. Only a flagged case retains its server-owned raw transcript, which is available through the authorized program-scoped staff case-detail workflow.
 
 Conversation Intelligence results are internal service data:
 
@@ -183,7 +183,7 @@ Language detection
 | 5 | Appointment history privacy, dashboard search/XSS remediation, notifications, staff calendar, and student appointment management. |
 | 6 | Intent, emotion, topic, metadata, summaries, and conversation privacy projection. |
 | 7 | Chat integration layering, JSON RAG records, structured prompt context, escalation workflow, response safety, and multilingual support. |
-| 8 | Flagged-case management: dedicated counselor notes, referrals, interventions, confidentiality, and the student case-status privacy projection. |
+| 8 | Flagged-case management: dedicated counselor notes, referrals, interventions, confidentiality, and staff-only case-status handling. |
 | 9 | Staff aggregate analytics for appointments, chatbot activity, counselor workload, and flagged cases; reports/CSV export and analytics overview. |
 | 10 | System integration, security/privacy, performance/reliability, deployment preparation, and current-reference documentation. |
 
@@ -192,9 +192,8 @@ Language detection
 Case-management operations are staff-only and build on flagged conversation
 summaries. Dedicated counselor notes persist separately. Referrals and
 interventions retain their append-only histories; confidentiality retains a
-current state and append-only history. Student case status is a strict
-privacy projection: it does not expose summaries, notes, reasons, referrals,
-interventions, confidentiality data, or internal identifiers.
+current state and append-only history. Case statuses are visible only in the
+authorized Guidance staff workflow.
 
 ## Sprint 9 — analytics and reports
 

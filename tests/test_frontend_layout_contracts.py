@@ -458,7 +458,6 @@ class FrontendLayoutContractTests(unittest.TestCase):
     def test_phone_tablet_desktop_responsive_guardrails_are_present(self) -> None:
         dashboard = _read("frontend/static/css/dashboard.css")
         appointment = _read("frontend/static/css/appointment.css")
-        case_status = _read("frontend/static/css/case_status.css")
         chatbot = _read("frontend/static/css/chatbot.css")
         admin = _read("frontend/static/css/admin.css")
 
@@ -472,11 +471,6 @@ class FrontendLayoutContractTests(unittest.TestCase):
         self.assertIn("min-height: 100dvh;", appointment)
         self.assertIn("@media (max-width: 960px) and (orientation: landscape)", appointment)
         self.assertIn("max-height: calc(100dvh - 32px);", appointment)
-
-        self.assertIn("overflow-x: hidden;", case_status)
-        self.assertIn("min-height: 100dvh;", case_status)
-        self.assertIn("flex-direction: column;", case_status)
-        self.assertIn("@media (max-width: 900px) and (orientation: landscape)", case_status)
 
         self.assertIn("min-width: 0;", chatbot)
         self.assertIn("@media (max-width: 900px) and (orientation: landscape)", chatbot)

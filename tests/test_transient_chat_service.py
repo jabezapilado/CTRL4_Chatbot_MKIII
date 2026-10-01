@@ -72,6 +72,26 @@ class TransientChatServiceTests(unittest.TestCase):
         )
         self.assertEqual(self.service.get_visible_history("session-a", 12), [])
         self.assertEqual(self.service.get_visible_history("session-b", 11), [])
+        self.assertEqual(
+            self.service.get_transcript_history("session-a", 11),
+            [
+                {"role": "user", "content": "First message"},
+                {"role": "assistant", "content": "First reply"},
+            ],
+        )
+
+    def test_transcript_history_keeps_raw_message_text_for_flagged_review(self) -> None:
+        message = "x" * 530
+        self.service.record_exchange("session-a", 11, [], message, "Full reply")
+
+        self.assertEqual(
+            self.service.get_visible_history("session-a", 11)[0]["text"],
+            message[:480],
+        )
+        self.assertEqual(
+            self.service.get_transcript_history("session-a", 11)[0]["content"],
+            message,
+        )
 
     def test_logout_or_expiry_cleanup_removes_the_server_owned_exchange(self) -> None:
         self.service.record_exchange("session-a", 11, [], "Protected message", "Protected reply")

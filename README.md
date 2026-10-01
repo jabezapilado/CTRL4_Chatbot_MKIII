@@ -80,7 +80,6 @@ Filipino or Taglish emotion model.
   Conditions acknowledgement.
 - Appointment booking, history, cancellation, and replacement rescheduling.
 - Recipient-scoped in-app notifications.
-- Privacy-projected personal case-status view.
 - Per-reply feedback for students, without storing chatbot reply text in the
   staff feedback view.
 - Turn-based chat controls with a short typing indicator for ordinary replies;
@@ -98,7 +97,8 @@ Filipino or Taglish emotion model.
 - Appointment lifecycle, counselor notes, and read-only calendar.
 - Flagged-case review, case notes, referrals, interventions, and
   confidentiality handling.
-- Summary-based Inbox, active Flagged Cases, privacy-safe Case Details
+- Summary-based Inbox, active Flagged Cases, staff-only retained transcripts
+  for flagged-case review, privacy-safe Case Details
   (including separate Detected Emotion and Safety Risk), and Reviewed Case
   History.
 - Immediate Inbox visibility for active conversations, with one record updated
@@ -116,8 +116,8 @@ Filipino or Taglish emotion model.
 
 MK III v1.0.7 extends the earlier modular chatbot baseline with appointment
 operations, dynamic counselor routing, persistent notifications, case
-management, active-conversation Inbox visibility, privacy-projected student
-case status, per-reply feedback, aggregate analytics, CSV reporting,
+management, active-conversation Inbox visibility, staff-only flagged-case
+transcripts, per-reply feedback, aggregate analytics, CSV reporting,
 server-side sessions, release-readiness testing, and deployment documentation.
 
 ## Architecture

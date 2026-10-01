@@ -511,6 +511,26 @@ def _column_exists(cursor: Any, table_name: str, column_name: str) -> bool:
 
 def _migrate_conversation_management_schema(cursor: Any) -> None:
     if _column_exists(cursor, "conversation_summaries", "transcript_json"):
+        # Preserve only legacy flagged-case transcripts before removing the
+        # retired general-summary column. Raw conversations now have their own
+        # staff-only table and are never retained for routine conversations.
+        cursor.execute(
+            """
+            INSERT INTO flagged_conversation_transcripts (
+                conversation_summary_id,
+                transcript_json,
+                created_at,
+                updated_at
+            )
+            SELECT id, transcript_json, created_at, created_at
+            FROM conversation_summaries
+            WHERE flagged_status = 1
+              AND transcript_json IS NOT NULL
+            ON DUPLICATE KEY UPDATE
+                transcript_json = VALUES(transcript_json),
+                updated_at = VALUES(updated_at)
+            """
+        )
         cursor.execute(
             """
             ALTER TABLE conversation_summaries
@@ -676,6 +696,20 @@ def initialize_database() -> None:
                     FOREIGN KEY (account_id)
                     REFERENCES accounts(id)
                     ON DELETE SET NULL
+                )
+                """
+            )
+            cursor.execute(
+                """
+                CREATE TABLE IF NOT EXISTS flagged_conversation_transcripts (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    conversation_summary_id INT NOT NULL UNIQUE,
+                    transcript_json MEDIUMTEXT NOT NULL,
+                    created_at DATETIME NOT NULL,
+                    updated_at DATETIME NOT NULL,
+                    FOREIGN KEY (conversation_summary_id)
+                    REFERENCES conversation_summaries(id)
+                    ON DELETE CASCADE
                 )
                 """
             )
@@ -2379,26 +2413,51 @@ def fetch_flagged_conversation(summary_id: int) -> dict[str, Any] | None:
     return rows[0] if rows else None
 
 
-def list_student_case_statuses(account_id: int) -> list[dict[str, Any]]:
-    """Return the current status and timestamps for one student's flagged cases."""
+def save_flagged_conversation_transcript(
+    summary_id: int,
+    transcript: list[dict[str, str]],
+) -> None:
+    """Persist the server-owned transcript for one flagged case only."""
     initialize_database()
+    serialized = json.dumps(transcript, ensure_ascii=False, separators=(",", ":"))
+    timestamp = current_time()
 
-    return fetch_rows(
+    with _database_connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                INSERT INTO flagged_conversation_transcripts (
+                    conversation_summary_id,
+                    transcript_json,
+                    created_at,
+                    updated_at
+                )
+                SELECT %s, %s, %s, %s
+                FROM conversation_summaries
+                WHERE id = %s
+                  AND flagged_status = 1
+                ON DUPLICATE KEY UPDATE
+                    transcript_json = VALUES(transcript_json),
+                    updated_at = VALUES(updated_at)
+                """,
+                (summary_id, serialized, timestamp, timestamp, summary_id),
+            )
+        connection.commit()
+
+
+def fetch_flagged_conversation_transcript(summary_id: int) -> dict[str, Any] | None:
+    """Return one raw transcript record for service-owned staff projection."""
+    initialize_database()
+    rows = fetch_rows(
         """
-        SELECT
-            escalations.status AS escalation_status,
-            conversation_summaries.created_at AS submitted_at,
-            COALESCE(escalations.reviewed_at, escalations.created_at) AS updated_at
-        FROM conversation_summaries
-        INNER JOIN escalations
-            ON escalations.summary_id = conversation_summaries.id
-        WHERE conversation_summaries.account_id = %s
-          AND conversation_summaries.flagged_status = 1
-        ORDER BY conversation_summaries.created_at DESC,
-                 escalations.id DESC
+        SELECT transcript_json, created_at, updated_at
+        FROM flagged_conversation_transcripts
+        WHERE conversation_summary_id = %s
+        LIMIT 1
         """,
-        (account_id,),
+        (summary_id,),
     )
+    return rows[0] if rows else None
 
 
 def mark_escalation_reviewed(summary_id: int) -> bool:

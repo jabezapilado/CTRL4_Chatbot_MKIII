@@ -77,9 +77,40 @@ def summary_conversation_evidence(entries: object) -> list[dict[str, str]]:
     return evidence
 
 
+def transcript_conversation_evidence(entries: object) -> list[dict[str, str]]:
+    """Return the retained raw transcript beginning with a student message.
+
+    This is intentionally separate from prompt/summary normalization: it keeps
+    the original server-captured message text for an authorized flagged-case
+    review while still bounding the number of retained exchanges.
+    """
+    if not isinstance(entries, list):
+        return []
+
+    evidence: list[dict[str, str]] = []
+    has_student_message = False
+    for item in entries[-MAX_HISTORY_MESSAGES:]:
+        if not isinstance(item, dict):
+            continue
+        raw_role = item.get("role", item.get("from", ""))
+        role = _ROLE_ALIASES.get(str(raw_role).strip().lower())
+        content = item.get("content", item.get("text", ""))
+        if role is None or not isinstance(content, str):
+            continue
+        text = content.strip()
+        if not text:
+            continue
+        if role == "user":
+            has_student_message = True
+        if has_student_message:
+            evidence.append({"role": role, "content": text})
+    return evidence
+
+
 __all__ = [
     "MAX_HISTORY_MESSAGES",
     "MAX_HISTORY_MESSAGE_CHARACTERS",
     "normalize_conversation_history",
     "summary_conversation_evidence",
+    "transcript_conversation_evidence",
 ]

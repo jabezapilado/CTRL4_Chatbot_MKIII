@@ -457,7 +457,15 @@ class ConversationFinalizationIntegrityTests(unittest.TestCase):
             return_value=81,
         ), patch(
             "backend.server.routes.chatbot_routes.mark_active_conversation_for_immediate_review",
-        ) as mark_active:
+        ) as mark_active, patch(
+            "backend.server.routes.chatbot_routes.transient_chat_service.get_transcript_history",
+            return_value=[
+                {"role": "user", "content": "I wanna finish my life."},
+                {"role": "assistant", "content": "Please contact the Guidance Office immediately."},
+            ],
+        ), patch(
+            "backend.server.routes.chatbot_routes.save_flagged_case_transcript",
+        ) as save_transcript:
             response = client.post(
                 "/chat",
                 json={"message": "I wanna finish my life.", "conversation": []},
@@ -471,6 +479,13 @@ class ConversationFinalizationIntegrityTests(unittest.TestCase):
             self.assertEqual(session["active_conversation_summary_id"], 81)
             self.assertEqual(session["conversation_escalation_reason"], "AI safety escalation.")
         mark_active.assert_called_once_with(81, 1, "AI safety escalation.")
+        save_transcript.assert_called_once_with(
+            81,
+            [
+                {"role": "user", "content": "I wanna finish my life."},
+                {"role": "assistant", "content": "Please contact the Guidance Office immediately."},
+            ],
+        )
 
     def test_warning_sign_response_immediately_creates_review_only_case(self) -> None:
         client = self._client()
@@ -504,7 +519,15 @@ class ConversationFinalizationIntegrityTests(unittest.TestCase):
             "backend.server.routes.chatbot_routes.mark_active_conversation_for_staff_review",
         ) as mark_for_review, patch(
             "backend.server.routes.chatbot_routes.mark_active_conversation_for_immediate_review",
-        ) as mark_immediate:
+        ) as mark_immediate, patch(
+            "backend.server.routes.chatbot_routes.transient_chat_service.get_transcript_history",
+            return_value=[
+                {"role": "user", "content": "I feel empty."},
+                {"role": "assistant", "content": "You do not have to face this alone."},
+            ],
+        ), patch(
+            "backend.server.routes.chatbot_routes.save_flagged_case_transcript",
+        ) as save_transcript:
             response = client.post(
                 "/chat",
                 json={"message": "I feel empty.", "conversation": []},
@@ -519,6 +542,13 @@ class ConversationFinalizationIntegrityTests(unittest.TestCase):
             "Counselor review requested for a reported wellbeing warning sign.",
         )
         mark_immediate.assert_not_called()
+        save_transcript.assert_called_once_with(
+            81,
+            [
+                {"role": "user", "content": "I feel empty."},
+                {"role": "assistant", "content": "You do not have to face this alone."},
+            ],
+        )
         with client.session_transaction() as session:
             self.assertTrue(session["conversation_needs_staff_review"])
 

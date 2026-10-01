@@ -20,6 +20,7 @@ from ..db import (
     get_dashboard_stats,
     get_student_by_id,
     fetch_flagged_conversation,
+    fetch_flagged_conversation_transcript,
     fetch_staff_inbox_summary,
     list_flagged_conversations,
     list_staff_flagged_case_summaries,
@@ -33,7 +34,6 @@ from ..db import (
     list_flagged_case_interventions_for_analytics,
     list_flagged_case_referrals_for_analytics,
     list_flagged_case_statuses_for_analytics,
-    list_student_case_statuses,
     list_escalations_for_programs,
     list_chatbot_inquiries_for_analytics,
     list_chatbot_feedback_for_programs,
@@ -44,10 +44,12 @@ from ..db import (
     save_escalation,
     save_inquiry,
     save_notification,
+    save_flagged_conversation_transcript,
 )
 
 from . import summary_service
 from .conversation_history import summary_conversation_evidence
+from .conversation_history import transcript_conversation_evidence
 
 logger = logging.getLogger(__name__)
 
@@ -285,22 +287,6 @@ _FLAGGED_CONVERSATION_FIELDS: Final[tuple[str, ...]] = (
     "escalation_reason",
     "reviewed_at",
 )
-_STUDENT_CASE_FIELDS: Final[tuple[str, ...]] = (
-    "case_status",
-    "submitted_at",
-    "updated_at",
-    "progress_text",
-)
-_STUDENT_CASE_STATUS_DETAILS: Final[dict[str, tuple[str, str]]] = {
-    "pending": (
-        "Submitted",
-        "Your case has been received by the Guidance Office.",
-    ),
-    "reviewed": (
-        "Reviewed",
-        "Your case has been reviewed. The Guidance Office will contact you if further support is needed.",
-    ),
-}
 _STAFF_INBOX_FIELDS: Final[tuple[str, ...]] = (
     "summary_id",
     "student_name",
@@ -481,6 +467,57 @@ def get_staff_inbox_item(staff_account: dict, summary_id: int) -> dict | None:
     return _project_staff_inbox_row(row, detail=True)
 
 
+def save_flagged_case_transcript(
+    summary_id: int,
+    conversation: object,
+) -> None:
+    """Persist server-owned evidence only after a case has been flagged."""
+    transcript = transcript_conversation_evidence(conversation)
+    if transcript:
+        save_flagged_conversation_transcript(summary_id, transcript)
+
+
+def get_staff_flagged_case_transcript(
+    staff_account: dict,
+    summary_id: int,
+) -> list[dict[str, str]] | None:
+    """Return raw messages only to staff authorized for this flagged case."""
+    item = get_staff_inbox_item(staff_account, summary_id)
+    if item is None or not item.get("flagged_status"):
+        return None
+
+    record = fetch_flagged_conversation_transcript(summary_id)
+    if record is None:
+        return []
+
+    try:
+        entries = json.loads(str(record.get("transcript_json") or "[]"))
+    except (TypeError, ValueError):
+        logger.error("Stored flagged-case transcript could not be decoded.")
+        return []
+
+    if not isinstance(entries, list):
+        return []
+
+    projected: list[dict[str, str]] = []
+    for entry in entries:
+        if not isinstance(entry, dict):
+            continue
+        role = str(entry.get("role") or "").strip().lower()
+        content = entry.get("content")
+        if role not in {"user", "assistant"} or not isinstance(content, str):
+            continue
+        text = content.strip()
+        if text:
+            projected.append(
+                {
+                    "role": "student" if role == "user" else "assistant",
+                    "content": text,
+                }
+            )
+    return projected
+
+
 def list_staff_reviewed_case_history(
     staff_account: dict,
     summary_id: int,
@@ -613,28 +650,6 @@ def list_staff_flagged_conversations() -> list[dict]:
         if str(row.get("escalation_status") or "").strip().lower()
         == ESCALATION_PENDING
     ]
-
-
-def list_student_cases(student_account: dict) -> list[dict]:
-    """Return only the authenticated student's approved case-status fields."""
-    cases = []
-    for row in list_student_case_statuses(student_account["id"]):
-        case_status, progress_text = _STUDENT_CASE_STATUS_DETAILS.get(
-            str(row.get("escalation_status") or "").strip().lower(),
-            (
-                "In Progress",
-                "Your case is being handled by the Guidance Office.",
-            ),
-        )
-        cases.append(
-            {
-                "case_status": case_status,
-                "submitted_at": row.get("submitted_at"),
-                "updated_at": row.get("updated_at"),
-                "progress_text": progress_text,
-            }
-        )
-    return [_project_fields(case, _STUDENT_CASE_FIELDS) for case in cases]
 
 
 def get_staff_flagged_conversation(summary_id: int) -> dict | None:
@@ -842,6 +857,8 @@ def finalize_conversation(
                 or "AI safety escalation.",
             ) and not review_only:
                 _notify_high_risk_conversation_safely(user["id"])
+            if summary.flagged and not flagged:
+                save_flagged_case_transcript(active_summary_id, evidence)
             logger.info("Active conversation finalization completed.")
             return {
                 "success": True,
@@ -921,6 +938,8 @@ def finalize_conversation(
         )
         if not review_only:
             _notify_high_risk_conversation_safely(user["id"])
+        if not flagged:
+            save_flagged_case_transcript(summary_id, evidence)
 
     logger.info("Conversation finalization completed.")
 

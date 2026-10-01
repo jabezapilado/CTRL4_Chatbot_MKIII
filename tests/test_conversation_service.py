@@ -202,6 +202,90 @@ class ConversationServiceTests(unittest.TestCase):
         self.assertNotIn("conversation_json", detail)
         self.assertNotIn("account_id", detail)
 
+    def test_flagged_transcript_is_staff_scoped_and_projects_only_messages(self):
+        row = self._inbox_row(
+            18,
+            "2026-00003",
+            program="BSIT",
+            flagged_status=True,
+            escalation_status="pending",
+        )
+        transcript = {
+            "transcript_json": (
+                '[{"role":"user","content":"I need help."},'
+                '{"role":"assistant","content":"I am here with you."},'
+                '{"role":"system","content":"internal"}]'
+            )
+        }
+        with patch.object(
+            conversation_service,
+            "fetch_staff_inbox_summary",
+            return_value=row,
+        ), patch.object(
+            conversation_service,
+            "fetch_account_by_id",
+            return_value=self._staff_account(["BSIT"]),
+        ), patch.object(
+            conversation_service,
+            "fetch_flagged_conversation_transcript",
+            return_value=transcript,
+        ) as fetch_transcript:
+            items = conversation_service.get_staff_flagged_case_transcript(
+                {"id": 3},
+                18,
+            )
+
+        fetch_transcript.assert_called_once_with(18)
+        self.assertEqual(
+            items,
+            [
+                {"role": "student", "content": "I need help."},
+                {"role": "assistant", "content": "I am here with you."},
+            ],
+        )
+
+        with patch.object(
+            conversation_service,
+            "fetch_staff_inbox_summary",
+            return_value=row,
+        ), patch.object(
+            conversation_service,
+            "fetch_account_by_id",
+            return_value=self._staff_account(["BSCS"]),
+        ), patch.object(
+            conversation_service,
+            "fetch_flagged_conversation_transcript",
+        ) as denied_fetch:
+            denied = conversation_service.get_staff_flagged_case_transcript(
+                {"id": 3},
+                18,
+            )
+
+        self.assertIsNone(denied)
+        denied_fetch.assert_not_called()
+
+    def test_transcript_persistence_uses_only_server_owned_conversation_evidence(self):
+        with patch.object(
+            conversation_service,
+            "save_flagged_conversation_transcript",
+        ) as save_transcript:
+            conversation_service.save_flagged_case_transcript(
+                21,
+                [
+                    {"role": "assistant", "content": "Welcome."},
+                    {"role": "user", "content": "I need help."},
+                    {"role": "assistant", "content": "I am here with you."},
+                ],
+            )
+
+        save_transcript.assert_called_once_with(
+            21,
+            [
+                {"role": "user", "content": "I need help."},
+                {"role": "assistant", "content": "I am here with you."},
+            ],
+        )
+
     def test_inbox_uses_case_level_review_status(self):
         row = self._inbox_row(
             21,

@@ -630,9 +630,6 @@ class PerformanceReliabilityRuntimeTests(unittest.TestCase):
         self._measure(
             "notification_list", lambda: self._request("student", student, "GET", "/api/notifications"), 200, 500,
         )
-        self._measure(
-            "student_case_status", lambda: self._request("student", student, "GET", "/api/student/cases"), 200, 500,
-        )
         for name, endpoint in (
             ("appointment_analytics", "/api/dashboard/appointments/analytics"),
             ("chatbot_analytics", "/api/dashboard/chatbot/analytics"),

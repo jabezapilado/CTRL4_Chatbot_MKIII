@@ -91,11 +91,6 @@ def chatbot():
     return response
 
 
-@frontend_bp.get("/case-status")
-def case_status():
-    return render_template("case_status.html")
-
-
 @frontend_bp.get("/appointment")
 def appointment():
     return render_template("appointment.html")
@@ -149,7 +144,7 @@ def require_login_for_private_routes():
         return _login_redirect_for_current_session_state()
 
     role = str(user.get("role", ROLE_STUDENT)).lower()
-    if path in {"/chatbot", "/appointment", "/case-status"} and role in {
+    if path in {"/chatbot", "/appointment"} and role in {
         ROLE_STAFF,
         ROLE_ADMIN,
     }:

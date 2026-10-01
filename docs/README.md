@@ -52,7 +52,7 @@ are not ordinary source, documentation, or cleanup work.
 - [Student Guide](guides/student_guide.md) — per-session Terms acknowledgement,
   student-only one-device sign-in handling,
   turn-based chat controls, compact mobile layout behavior, appointments,
-  notifications, and privacy-projected case status.
+  notifications, and student privacy boundaries.
 - [Guidance Staff Guide](guides/guidance_staff_guide.md) — authorized
   appointment, case-management, settings, analytics, reports, and CSV workflows.
 - [Administrator Guide](guides/administrator_guide.md) — account-management-only

@@ -28,7 +28,6 @@ unauthenticated users to login and enforces the listed role boundary.
 | GET | `/login` | Public | Login page |
 | GET | `/chatbot` | Student | Student chatbot |
 | GET | `/appointment` | Student | Student appointment page |
-| GET | `/case-status` | Student | Student case-status page |
 | GET | `/dashboard` | Guidance staff | Staff dashboard |
 | GET | `/admin` | Administrator | Account-management portal only |
 
@@ -134,9 +133,10 @@ reporting channel.
 
 The student Terms and Conditions describe the Guidance Office of the School of
 Computing at Holy Angel University scope. They state that messages may be
-recorded and summarized for guidance support, confidentiality has safety/legal
-limits, and immediate danger requires local emergency services or trusted school
-personnel. The acknowledgement does not apply to staff or administrator
+recorded and summarized for guidance support, that a flagged conversation may
+be retained for authorized counselor review, confidentiality has safety/legal
+limits, and immediate danger requires local emergency services or trusted
+school personnel. The acknowledgement does not apply to staff or administrator
 dashboards.
 
 ## Notifications and settings
@@ -184,6 +184,7 @@ privacy-projected; student APIs do not receive these records.
 | GET | `/api/staff/inbox` | None | 200 current authorized student summary items, one latest item per student |
 | GET | `/api/staff/inbox/<summary_id>` | None | 200 privacy-projected summary detail; 404 outside staff program scope or missing |
 | GET | `/api/staff/inbox/<summary_id>/history` | None | 200 reviewed flagged-case history for the same authorized student; 404 outside staff program scope or missing |
+| GET | `/api/flagged-conversations/<summary_id>/transcript` | None | 200 server-owned raw transcript for the flagged case; 404 outside staff program scope, non-flagged, or missing; never available to students or administrators |
 | GET | `/api/staff/chatbot-feedback` | None | 200 ratings, optional notes, broad reply contexts, and scoped aggregate quality signals; no raw chat/AI reply text |
 | GET | `/api/inquiries` | None | 200 `data.items` |
 | GET | `/api/conversation-summaries` | None | 200 `data.items` |
@@ -205,16 +206,11 @@ privacy-projected; student APIs do not receive these records.
 | PATCH | `/api/flagged-conversations/<summary_id>/interventions/<intervention_id>/progress` | `progress_status` | 200; 400/404 |
 | PATCH | `/api/flagged-conversations/<summary_id>/interventions/<intervention_id>/outcome` | `outcome` | 200; 400/404 |
 
-Inbox and case endpoints return privacy-projected summaries, not raw chat
-transcripts. Active Flagged Cases are pending cases; reviewed records are
-available through the authorized inbox-history flow. A staff member outside the
-student's authorized program scope receives the existing not-found response.
-
-## Student case status
-
-| Method | Path | Access | Request | Success / privacy |
-| --- | --- | --- | --- | --- |
-| GET | `/api/student/cases` | Student | None | 200 own generic status `data.items`; no notes, summaries, reasons, or internal identifiers |
+Inbox and ordinary case endpoints return privacy-projected summaries. The
+flagged-case transcript endpoint is the sole staff-only raw-transcript view.
+Active Flagged Cases are pending cases; reviewed records are available through
+the authorized inbox-history flow. A staff member outside the student's
+authorized program scope receives the existing not-found response.
 
 ## Dashboard analytics — staff only
 

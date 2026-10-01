@@ -11,8 +11,8 @@
 CTRL4 is an authenticated Guidance Office support system for Holy Angel
 University. Its implemented domains are account management, appointments,
 in-app notifications, chatbot conversations and finalization, flagged-case
-management, counselor notes, referrals, interventions, confidentiality,
-student case-status projection, and staff analytics/reports.
+management, counselor notes, referrals, interventions, confidentiality, and
+staff analytics/reports.
 
 The stack is Flask, MySQL/MariaDB, server-side CacheLib sessions, a JavaScript
 frontend, FAISS-backed retrieval, and Gemini or Ollama through the LLM provider
@@ -47,7 +47,7 @@ guards reuse `require_login`, `require_role`, and `require_any_role`.
 
 | Role | Implemented authority |
 | --- | --- |
-| Student | Own chatbot activity, appointments, notifications, and approved case-status projection |
+| Student | Own chatbot activity, appointments, and notifications |
 | Guidance staff | Staff appointment, conversation, case-management, settings, analytics, and reports workflows exposed by staff route guards and service checks |
 | Administrator | Account management only |
 
@@ -86,20 +86,23 @@ Appointment policy is service-owned:
 
 ## Conversations, cases, and notifications
 
-Raw message history is used only for the active interaction and finalization;
-the authenticated session retains a bounded recent window of up to 50 exchanges
-for continuity, using the same bounded text budget as before. It is not persisted as a transcript and is
-cleared on finalization, logout, expiry, or
-student device replacement. Finalization persists the existing
+Raw message history is used for the active interaction and finalization; the
+authenticated session retains a bounded recent window of up to 50 exchanges
+for continuity, using the same bounded text budget as before. Once a
+conversation is flagged, its server-owned transcript is retained for the
+authorized Guidance staff case review; routine conversation transcripts remain
+temporary and are cleared on finalization, logout, expiry, or student device
+replacement. Finalization persists the existing
 counselor-oriented summary and approved metadata, and may create one
 summary-linked escalation. Staff-only case workflows build on flagged
 summaries: dedicated counselor notes, internal referrals and append-only
 history, interventions and append-only history, and current confidentiality
-state with append-only history. Student case status is a privacy-projected,
-generic status view only.
+state with append-only history. Case statuses are visible only to authorized
+Guidance staff.
 
-The staff dashboard uses privacy-safe summaries rather than raw transcripts.
-Inbox presents one current summary item per student/case priority. Flagged
+The staff dashboard uses privacy-safe summaries for ordinary Inbox items and
+provides the retained raw transcript only inside the authorized detail view of
+a flagged case. Inbox presents one current summary item per student/case priority. Flagged
 Cases presents authorized pending and reviewed flagged cases, with pending
 review clearly distinguished from reviewed status; relevant reviewed history
 also remains available in authorized case details. Case Details presents Detected Emotion and Safety
