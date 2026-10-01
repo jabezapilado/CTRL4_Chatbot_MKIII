@@ -4484,6 +4484,58 @@ function downloadReportsCsv() {
   URL.revokeObjectURL(url);
 }
 
+function reportVisualRows(rows, maximum) {
+  return rows
+    .map((item) => {
+      const width = Math.round((item.value / Math.max(maximum, 1)) * 100);
+      return `<div class="bar-row"><span>${escapeHtml(item.label)}</span><div class="bar-track"><i style="width:${width}%"></i></div><strong>${item.value}</strong></div>`;
+    })
+    .join("");
+}
+
+function downloadVisualOverview() {
+  const cases = flaggedConversations.filter(
+    (item) => item.flagged && item.status !== "reviewed",
+  );
+  const appointments = (window.backendAppointments || []).filter((item) =>
+    ["pending", "confirmed"].includes(item.status),
+  );
+  const priorityRows = ["critical", "high", "medium", "low"].map(
+    (priority) => ({
+      label: priority.replace(/^./, (character) => character.toUpperCase()),
+      value: cases.filter((item) => item.priority === priority).length,
+    }),
+  );
+  const statusRows = ["pending", "confirmed"].map((status) => ({
+    label: status.replace(/^./, (character) => character.toUpperCase()),
+    value: appointments.filter((item) => item.status === status).length,
+  }));
+  const referrals = cases.filter((item) => item.hasReferral).length;
+  const metrics = [
+    ["Student appointments", appointments.length],
+    ["Students needing review", cases.length],
+    ["Student case records", flaggedConversations.length],
+    ["Students with referrals", referrals],
+  ];
+  const metricMarkup = metrics
+    .map(
+      ([label, value]) =>
+        `<div class="metric"><span>${escapeHtml(label)}</span><strong>${value}</strong></div>`,
+    )
+    .join("");
+  const html = `<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Guidance Overview Summary</title>
+<style>
+body{margin:0;padding:32px;background:#f5f3ef;color:#2f2f2f;font:14px system-ui,sans-serif}main{max-width:1000px;margin:auto;background:#fff;padding:28px;border:1px solid #ddd}h1{margin:0 0 6px;color:#d35400}h2{font-size:16px;margin:28px 0 12px}.meta{color:#777;font-size:12px}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.metric{padding:14px;border:1px solid #e3ded7;background:#fbfaf8}.metric span{display:block;font-size:11px;text-transform:uppercase;color:#777}.metric strong{display:block;margin-top:6px;font-size:28px}.graphs{display:grid;grid-template-columns:1fr 1fr;gap:20px}.graph{padding:16px;border:1px solid #e3ded7}.bar-row{display:grid;grid-template-columns:80px 1fr 28px;gap:8px;align-items:center;margin:12px 0}.bar-track{height:10px;background:#e5e0d8;border-radius:8px;overflow:hidden}.bar-track i{display:block;height:100%;background:#d35400;border-radius:8px}@media(max-width:700px){body{padding:12px}.metrics,.graphs{grid-template-columns:1fr 1fr}.metric strong{font-size:22px}}
+</style></head><body><main><h1>SOC Guidance Office</h1><div class="meta">Counselor Overview Summary · Generated ${escapeHtml(new Date().toLocaleString())}</div><section class="metrics">${metricMarkup}</section><section class="graphs"><div class="graph"><h2>Student cases by priority</h2>${reportVisualRows(priorityRows, Math.max(...priorityRows.map((row) => row.value)))}</div><div class="graph"><h2>Student appointments by status</h2>${reportVisualRows(statusRows, Math.max(...statusRows.map((row) => row.value)))}</div></section></main></body></html>`;
+  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "guidance-overview-visual.html";
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
+
 function bindReportsControls() {
   document
     .getElementById("reports-apply")
@@ -4515,6 +4567,9 @@ function bindReportsControls() {
   document
     .getElementById("reports-export-csv")
     ?.addEventListener("click", downloadReportsCsv);
+  document
+    .getElementById("reports-export-visual")
+    ?.addEventListener("click", downloadVisualOverview);
 }
 
 function updateFlaggedCount() {
