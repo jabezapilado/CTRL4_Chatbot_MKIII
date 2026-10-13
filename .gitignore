@@ -161,3 +161,7 @@ AGENTS.md
 
 # Local-only review material, backups, and deferred patches
 local_artifacts/
+
+# Docker Compose runtime mounts (sessions and logs only; model/RAG paths are
+# already excluded above).
+runtime/

@@ -25,6 +25,110 @@ secure cookies and therefore must receive HTTPS requests from that proxy.
 - Either a Gemini API key or a reachable Ollama instance
 - For production: a reverse proxy that terminates HTTPS
 
+## Docker and Docker Hub
+
+CTRL4 supports a Docker image for reproducible application packaging. Docker
+Hub stores that image; it is not a replacement for the VPS, Nginx, the
+provisioned MySQL instance, or the protected AI/runtime assets.
+
+The image installs the official CPU-only PyTorch wheel because CTRL4's current
+VPS performs CPU inference. It does not bundle NVIDIA CUDA libraries.
+
+The image deliberately contains only application source and Python runtime
+dependencies. Never include or upload the following in an image, Docker Hub
+repository, Compose file, or Git commit:
+
+- `backend/.env`, API keys, database passwords, session secrets, or SSH keys;
+- MySQL/MariaDB data or SQL backups;
+- `model.safetensors` or historical model checkpoints;
+- the generated RAG index, operational logs, filesystem sessions, student
+  data, staff records, uploads, screenshots, or local research material.
+
+The repository's `.dockerignore` enforces the source-image boundary. The
+`compose.yaml` runs a single app container only. It intentionally does not add
+a database, Nginx, or public management service, because the supported
+production topology retains those existing protected services.
+
+### Build and test locally
+
+Install Docker Desktop and sign in to Docker Hub. The project owner's Docker
+Hub namespace is `jabezapilado`; the image repository is
+`ctrl4-chatbot-mkiii`.
+
+The container connects to a MySQL instance already running on the host by
+default. On Docker Desktop for Mac, `host.docker.internal` reaches the host.
+On Linux Compose supplies the same name through the `host-gateway` mapping. If
+MySQL is on another host, set `CTRL4_DB_HOST` to that private hostname or IP.
+
+Prepare the ordinary VPS/local `backend/.env` first; it remains untracked.
+Then build and start one local app container:
+
+```bash
+docker compose build
+docker compose up -d
+docker compose ps
+curl --fail --silent --show-error http://127.0.0.1:5001/health
+```
+
+The default Compose mounts are local `runtime/sessions`, `runtime/logs`, the
+existing `backend/data/rag_index`, and the controlled model weight at
+`ai_engine/models/english/latest/model.safetensors`. Override paths without
+editing Compose, for example:
+
+```bash
+CTRL4_RUNTIME_DIR=/secure/ctrl4-runtime \
+CTRL4_RAG_INDEX_DIR=/secure/ctrl4-rag-index \
+CTRL4_MODEL_WEIGHTS=/secure/ctrl4-model/model.safetensors \
+docker compose up -d
+```
+
+If the container cannot connect to MySQL, do not weaken database access or
+expose port 3306. Verify the configured `CHATBOT_DB_HOST`, the existing
+database user's permitted host, and private network reachability instead.
+
+Stop only the application container with:
+
+```bash
+docker compose down
+```
+
+That command does not remove the host-mounted database, model, RAG index,
+sessions, or logs.
+
+### Publish a tested image to Docker Hub
+
+Use a meaningful immutable tag, preferably the Git commit short SHA or an
+approved release tag. Do not rely only on `latest` for a production rollback.
+
+```bash
+IMAGE=jabezapilado/ctrl4-chatbot-mkiii
+TAG=$(git rev-parse --short HEAD)
+
+docker build --platform linux/amd64 --tag "$IMAGE:$TAG" .
+docker push "$IMAGE:$TAG"
+docker tag "$IMAGE:$TAG" "$IMAGE:latest"
+docker push "$IMAGE:latest"
+```
+
+The `linux/amd64` platform matches the current VPS. On Apple Silicon, Docker
+Desktop may build this through emulation; expect the first build to take
+longer. Confirm the tag appears in Docker Hub before any server change.
+
+### Production migration boundary
+
+Moving the VPS from systemd-managed Gunicorn to Docker Compose is a separate,
+reviewed production change. Before switching traffic, back up MySQL and retain
+the current systemd unit as a rollback path. Preserve Nginx as the HTTPS
+reverse proxy and bind the container only to `127.0.0.1:5001`; do not publish
+additional ports. Configure Compose on the VPS to pull a specific image tag,
+mount the existing protected model/RAG/session/log locations, and retain the
+VPS-only `backend/.env` outside source control.
+
+Update the GitHub Actions deployment workflow only after a verified manual VPS
+cutover. It currently deploys the systemd/Gunicorn topology, so it must not be
+used to restart a Docker container until that reviewed workflow change is in
+place.
+
 ## Dependencies
 
 `requirements.txt` at the repository root is the **sole authoritative runtime

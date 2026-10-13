@@ -57,6 +57,16 @@ the provisioned English emotion-model artifact, generated RAG data, and the
 production database. Follow the [Deployment Guide](docs/deployment/deployment_guide.md)
 for the supported setup and operational checks.
 
+### Docker image and Docker Hub
+
+CTRL4 can also be built as a source-only Docker image and published to Docker
+Hub as `jabezapilado/ctrl4-chatbot-mkiii`. The image contains the Flask/Gunicorn
+application and its dependencies—not secrets, database data, the controlled
+model weight, the generated RAG index, sessions, or logs. Those remain mounted
+or configured external runtime assets. Use the Docker section of the
+[Deployment Guide](docs/deployment/deployment_guide.md#docker-and-docker-hub)
+for the supported build, local run, and VPS migration procedure.
+
 ## Features
 
 ### AI and chatbot

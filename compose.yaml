@@ -1,0 +1,36 @@
+name: ctrl4
+
+services:
+  app:
+    # During local development, build this exact checkout. On the VPS, set
+    # CTRL4_IMAGE to a published, immutable Docker Hub tag and use --pull.
+    image: ${CTRL4_IMAGE:-jabezapilado/ctrl4-chatbot-mkiii:local}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - path: ./backend/.env
+        required: true
+    environment:
+      CHATBOT_PORT: "5001"
+      # Docker Desktop resolves this to the Mac host; host-gateway below makes
+      # the name available on Linux. Override it if MySQL runs elsewhere.
+      CHATBOT_DB_HOST: ${CTRL4_DB_HOST:-host.docker.internal}
+      CHATBOT_RAG_INDEX_DIR: /runtime/rag_index
+      CHATBOT_SESSION_FILE_DIR: /runtime/sessions
+      CHATBOT_LOG_FILE: /runtime/logs/ctrl4.log
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    ports:
+      # Nginx remains the public HTTPS endpoint in production. Keep Gunicorn
+      # loopback-bound on the host rather than publishing a new public port.
+      - "127.0.0.1:${CTRL4_HOST_PORT:-5001}:5001"
+    volumes:
+      # Mutable operational data is never baked into or retrieved from an image.
+      - ${CTRL4_RUNTIME_DIR:-./runtime}/sessions:/runtime/sessions
+      - ${CTRL4_RUNTIME_DIR:-./runtime}/logs:/runtime/logs
+      - ${CTRL4_RAG_INDEX_DIR:-./backend/data/rag_index}:/runtime/rag_index:ro
+      # The controlled model weight is mounted read-only; tokenizer/configuration
+      # files remain source-controlled alongside the application.
+      - ${CTRL4_MODEL_WEIGHTS:-./ai_engine/models/english/latest/model.safetensors}:/app/ai_engine/models/english/latest/model.safetensors:ro
+    restart: unless-stopped

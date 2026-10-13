@@ -1,0 +1,57 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+
+# Version-control and editor metadata
+.git/
+.github/
+.vscode/
+.idea/
+.DS_Store
+._*
+**/._*
+
+# Python/build caches
+.venv/
+venv/
+env/
+__pycache__/
+**/__pycache__/
+*.py[cod]
+**/*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+build/
+dist/
+*.egg-info/
+
+# Protected runtime assets and mutable operational data
+ai_engine/models/**/model.safetensors
+ai_engine/models/**/checkpoint-*/
+ai_engine/models/emotion_model/
+backend/data/rag_index/
+backend/data/sessions/
+backend/data/transient_chat/
+backend/data/student_sessions/
+backend/data/logs/
+backend/data/backups/
+# Docker must never receive the entire mutable data directory. This also avoids
+# macOS AppleDouble metadata generated beside its runtime directories.
+backend/data/
+runtime/
+
+# Local datasets, research evidence, and temporary work
+ai_engine/data/processed/
+ai_engine/data/merged/
+docs/research/
+local_artifacts/
+tmp/
+*.log
+*.sqlite*
+
+# A local Python cache with AppleDouble metadata exists in the current working
+# tree; no Python bytecode belongs in an application image.
+ai_engine/core/utilities/__pycache__/
