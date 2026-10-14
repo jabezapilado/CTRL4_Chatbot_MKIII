@@ -16,28 +16,31 @@ RUN apt-get update \
     && apt-get install --no-install-recommends -y libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt ./
+COPY --chmod=644 requirements.txt ./
 RUN python -m pip install --upgrade pip \
     && python -m pip install --index-url https://download.pytorch.org/whl/cpu torch==2.5.1 \
     && python -m pip install -r requirements.txt
 
-COPY backend ./backend
-COPY ai_engine ./ai_engine
-COPY frontend ./frontend
-COPY demo ./demo
-COPY demo_assets/model.safetensors ./ai_engine/models/english/latest/model.safetensors
-COPY demo_assets/rag_index ./demo_assets/rag_index
+COPY --chmod=755 backend ./backend
+COPY --chmod=755 ai_engine ./ai_engine
+COPY --chmod=755 frontend ./frontend
+COPY --chmod=755 demo ./demo
+COPY --chmod=644 demo_assets/model.safetensors ./ai_engine/models/english/latest/model.safetensors
+COPY --chmod=755 demo_assets/rag_index ./demo_assets/rag_index
 # The public E5 cache is staged from the verified local Hugging Face cache.
 # Keeping it in the image removes a first-run download on the demo computer.
-COPY demo_assets/huggingface /app/.cache/huggingface
+COPY --chmod=755 demo_assets/huggingface /app/.cache/huggingface
 
 # Replace only the model and generated index paths required by the demo.  The
 # ordinary project image continues to receive these assets as runtime mounts.
 RUN mkdir -p /runtime/sessions /runtime/logs \
     && useradd --create-home --uid 10001 --shell /usr/sbin/nologin ctrl4 \
-    && chown -R ctrl4:ctrl4 /app /runtime
+    && chown -R ctrl4:ctrl4 /runtime
 
-USER ctrl4
+# The Hugging Face cache maintains small lock and sentinel files on first
+# lookup. Keep the presentation image's default Docker user so that cache is
+# writable without duplicating the multi-gigabyte cache in another image layer.
+USER root
 
 EXPOSE 5001
 
