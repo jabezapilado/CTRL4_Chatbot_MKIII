@@ -15,6 +15,54 @@ You also need a Gemini API key for the demonstration. The key is entered only
 on the presentation computer at runtime; it is not included in the GitHub
 repository, Docker image, or Docker Hub.
 
+## Docker-only demonstration (no repository download)
+
+The following macOS/Linux commands pull and run the complete demonstration
+without cloning this repository or downloading `compose.demo.yaml`. Docker
+downloads the CTRL4 application image and the official MySQL image itself.
+
+```bash
+export CHATBOT_GEMINI_API_KEY='paste-your-key-here'
+
+docker network create ctrl4-demo-net
+docker volume create ctrl4-demo-mysql
+
+docker run -d --name ctrl4-demo-db \
+  --network ctrl4-demo-net --network-alias ctrl4-demo-db \
+  -e MYSQL_DATABASE=soc_chatbot_demo \
+  -e MYSQL_USER=ctrl4_demo \
+  -e MYSQL_PASSWORD=ctrl4-demo-only \
+  -e MYSQL_ROOT_PASSWORD=local-demo-root-only \
+  -v ctrl4-demo-mysql:/var/lib/mysql \
+  mysql:8.4
+
+docker run -d --name ctrl4-demo-app \
+  --network ctrl4-demo-net \
+  -p 127.0.0.1:5001:5001 \
+  -e CHATBOT_GEMINI_API_KEY="$CHATBOT_GEMINI_API_KEY" \
+  -v ctrl4-demo-sessions:/runtime/sessions \
+  -v ctrl4-demo-logs:/runtime/logs \
+  jabezapilado/ctrl4-chatbot-mkiii:demo
+```
+
+Wait up to a few minutes on the first run while MySQL initializes, then open
+`http://localhost:5001`. To check readiness:
+
+```bash
+curl http://127.0.0.1:5001/health
+```
+
+To remove this Docker-only demo after presenting:
+
+```bash
+docker rm -f ctrl4-demo-app ctrl4-demo-db
+docker network rm ctrl4-demo-net
+docker volume rm ctrl4-demo-mysql ctrl4-demo-sessions ctrl4-demo-logs
+```
+
+The remainder of this guide provides the equivalent Docker Compose procedure,
+which is shorter for repeat demonstrations.
+
 ## 1. Download the Compose file
 
 Create a new folder for the demonstration and download the small Compose file:

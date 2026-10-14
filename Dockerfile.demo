@@ -44,6 +44,50 @@ USER root
 
 EXPOSE 5001
 
+# Public, fictitious defaults used only by the isolated presentation database.
+# The Gemini key remains intentionally unset and must be passed at runtime.
+ENV CHATBOT_ENV=development \
+    CHATBOT_DEBUG=false \
+    CHATBOT_SECRET_KEY=ctrl4-demo-not-for-production \
+    CHATBOT_SESSION_COOKIE_SECURE=false \
+    CHATBOT_DB_HOST=ctrl4-demo-db \
+    CHATBOT_DB_PORT=3306 \
+    CHATBOT_DB_NAME=soc_chatbot_demo \
+    CHATBOT_DB_USER=ctrl4_demo \
+    CHATBOT_DB_PASSWORD=ctrl4-demo-only \
+    CHATBOT_RAG_INDEX_DIR=/app/demo_assets/rag_index \
+    CHATBOT_RAG_AUTO_BUILD_ON_START=false \
+    CHATBOT_LLM_PROVIDER=gemini \
+    CHATBOT_GEMINI_MODEL=gemini-2.5-flash \
+    CHATBOT_SESSION_FILE_DIR=/runtime/sessions \
+    CHATBOT_LOG_FILE=/runtime/logs/ctrl4.log \
+    CHATBOT_SEED_STUDENT_EMAIL=demo.student@ctrl4.local \
+    CHATBOT_SEED_STUDENT_NAME='Demo Student' \
+    CHATBOT_SEED_STUDENT_NUMBER=DEMO-2026-001 \
+    CHATBOT_SEED_STUDENT_PASSWORD='DemoStudent2026!' \
+    CHATBOT_SEED_STUDENT_GENDER='Prefer not to say' \
+    CHATBOT_SEED_STUDENT_PROGRAM='BS Computer Science' \
+    CHATBOT_SEED_STUDENT2_EMAIL=demo.student2@ctrl4.local \
+    CHATBOT_SEED_STUDENT2_NAME='Demo Student Two' \
+    CHATBOT_SEED_STUDENT2_NUMBER=DEMO-2026-002 \
+    CHATBOT_SEED_STUDENT2_PASSWORD='DemoStudent2026!' \
+    CHATBOT_SEED_STUDENT2_GENDER='Prefer not to say' \
+    CHATBOT_SEED_STUDENT2_PROGRAM='BS Information Technology - Web Development' \
+    CHATBOT_SEED_STAFF_EMAIL=demo.staff@ctrl4.local \
+    CHATBOT_SEED_STAFF_NAME='Demo Guidance Staff' \
+    CHATBOT_SEED_STAFF_NUMBER=DEMO-STF-001 \
+    CHATBOT_SEED_STAFF_PASSWORD='DemoStaff2026!' \
+    CHATBOT_SEED_STAFF_GENDER='Prefer not to say' \
+    CHATBOT_SEED_STAFF2_EMAIL=demo.staff2@ctrl4.local \
+    CHATBOT_SEED_STAFF2_NAME='Demo Guidance Staff Two' \
+    CHATBOT_SEED_STAFF2_NUMBER=DEMO-STF-002 \
+    CHATBOT_SEED_STAFF2_PASSWORD='DemoStaff2026!' \
+    CHATBOT_SEED_STAFF2_GENDER='Prefer not to say' \
+    CHATBOT_SEED_ADMIN_EMAIL=demo.admin@ctrl4.local \
+    CHATBOT_SEED_ADMIN_NAME='Demo Administrator' \
+    CHATBOT_SEED_ADMIN_PASSWORD='DemoAdmin2026!' \
+    CHATBOT_SEED_ADMIN_GENDER='Prefer not to say'
+
 HEALTHCHECK --interval=30s --timeout=5s --start-period=120s --retries=5 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5001/health', timeout=3).read()"
 
