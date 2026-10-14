@@ -75,6 +75,9 @@ container, uses fictitious accounts, and packages the approved model weight
 and RAG index into a separately tagged demo image. It never uses the
 production database or real user records.
 
+For the short, copy-and-paste setup procedure on a presentation computer, see
+[Docker Demonstration Quick Start](docs/deployment/docker_demo_quickstart.md).
+
 The Gemini API key is supplied only when the container starts. It is never
 placed in Git, Docker Hub, the image, or a database volume. The demo profile
 does not use XAMPP, a local source checkout, the local model directory, or a
