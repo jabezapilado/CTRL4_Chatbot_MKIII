@@ -42,7 +42,7 @@ docker run -d --name ctrl4-demo-app \
   -e CHATBOT_GEMINI_API_KEY="$CHATBOT_GEMINI_API_KEY" \
   -v ctrl4-demo-sessions:/runtime/sessions \
   -v ctrl4-demo-logs:/runtime/logs \
-  jabezapilado/ctrl4-chatbot-mkiii:demo
+  jabezapilado/ctrl4-chatbot-mkiii:v1.0.7
 ```
 
 Wait up to a few minutes on the first run while MySQL initializes, then open
@@ -105,7 +105,7 @@ docker compose -f compose.demo.yaml up -d
 
 Docker pulls two images automatically:
 
-- `jabezapilado/ctrl4-chatbot-mkiii:demo` — CTRL4 application, approved demo
+- `jabezapilado/ctrl4-chatbot-mkiii:v1.0.7` — CTRL4 application, approved demo
   model, and RAG retrieval data.
 - `mysql:8.4` — isolated database initialized with fictitious accounts.
 

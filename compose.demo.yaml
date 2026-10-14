@@ -19,7 +19,7 @@ services:
       retries: 30
 
   app:
-    image: ${CTRL4_DEMO_IMAGE:-jabezapilado/ctrl4-chatbot-mkiii:demo}
+    image: ${CTRL4_DEMO_IMAGE:-jabezapilado/ctrl4-chatbot-mkiii:v1.0.7}
     build:
       context: .
       dockerfile: Dockerfile.demo

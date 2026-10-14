@@ -72,7 +72,7 @@ for the supported build, local run, and VPS migration procedure.
 The repository also provides a **presentation-only** Docker Compose package
 for a local, Gemini-enabled demonstration. It starts an isolated MySQL
 container, uses fictitious accounts, and packages the approved model weight
-and RAG index into a separately tagged demo image. It never uses the
+and RAG index into the versioned presentation image. It never uses the
 production database or real user records.
 
 For the short, copy-and-paste setup procedure on a presentation computer, see
@@ -108,7 +108,7 @@ and add `--env-file demo.env` to each Compose command. The local file remains
 Git-ignored.
 
 After its first tested build has been published as
-`jabezapilado/ctrl4-chatbot-mkiii:demo`, a presentation machine needs only
+`jabezapilado/ctrl4-chatbot-mkiii:v1.0.7`, a presentation machine needs only
 Docker Desktop, internet access, this small Compose file, and a valid Gemini
 API key. Download the Compose file, set the key in that terminal session, and
 start the demo:
