@@ -1,0 +1,83 @@
+name: ctrl4-demo
+
+# Presentation-only stack.  It uses a fresh MySQL volume and fictitious
+# accounts; it does not connect to XAMPP or any production database.
+services:
+  db:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: soc_chatbot_demo
+      MYSQL_USER: ctrl4_demo
+      MYSQL_PASSWORD: ctrl4-demo-only
+      MYSQL_ROOT_PASSWORD: local-demo-root-only
+    volumes:
+      - ctrl4_demo_mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$${MYSQL_ROOT_PASSWORD} || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  app:
+    image: ${CTRL4_DEMO_IMAGE:-jabezapilado/ctrl4-chatbot-mkiii:demo}
+    build:
+      context: .
+      dockerfile: Dockerfile.demo
+    environment:
+      CHATBOT_ENV: development
+      CHATBOT_DEBUG: "false"
+      CHATBOT_SECRET_KEY: ctrl4-demo-not-for-production
+      CHATBOT_SESSION_COOKIE_SECURE: "false"
+      CHATBOT_DB_HOST: db
+      CHATBOT_DB_PORT: "3306"
+      CHATBOT_DB_NAME: soc_chatbot_demo
+      CHATBOT_DB_USER: ctrl4_demo
+      CHATBOT_DB_PASSWORD: ctrl4-demo-only
+      CHATBOT_RAG_INDEX_DIR: /app/demo_assets/rag_index
+      CHATBOT_RAG_AUTO_BUILD_ON_START: "false"
+      # The key is deliberately supplied only by the presentation computer,
+      # never by this repository or the image published to Docker Hub.
+      CHATBOT_LLM_PROVIDER: gemini
+      CHATBOT_GEMINI_API_KEY: ${CHATBOT_GEMINI_API_KEY:?Set CHATBOT_GEMINI_API_KEY before starting the demo.}
+      CHATBOT_GEMINI_MODEL: ${CHATBOT_GEMINI_MODEL:-gemini-2.5-flash}
+      CHATBOT_SESSION_FILE_DIR: /runtime/sessions
+      CHATBOT_LOG_FILE: /runtime/logs/ctrl4.log
+      CHATBOT_SEED_STUDENT_EMAIL: demo.student@ctrl4.local
+      CHATBOT_SEED_STUDENT_NAME: Demo Student
+      CHATBOT_SEED_STUDENT_NUMBER: DEMO-2026-001
+      CHATBOT_SEED_STUDENT_PASSWORD: DemoStudent2026!
+      CHATBOT_SEED_STUDENT_GENDER: Prefer not to say
+      CHATBOT_SEED_STUDENT_PROGRAM: BS Computer Science
+      CHATBOT_SEED_STUDENT2_EMAIL: demo.student2@ctrl4.local
+      CHATBOT_SEED_STUDENT2_NAME: Demo Student Two
+      CHATBOT_SEED_STUDENT2_NUMBER: DEMO-2026-002
+      CHATBOT_SEED_STUDENT2_PASSWORD: DemoStudent2026!
+      CHATBOT_SEED_STUDENT2_GENDER: Prefer not to say
+      CHATBOT_SEED_STUDENT2_PROGRAM: BS Information Technology - Web Development
+      CHATBOT_SEED_STAFF_EMAIL: demo.staff@ctrl4.local
+      CHATBOT_SEED_STAFF_NAME: Demo Guidance Staff
+      CHATBOT_SEED_STAFF_NUMBER: DEMO-STF-001
+      CHATBOT_SEED_STAFF_PASSWORD: DemoStaff2026!
+      CHATBOT_SEED_STAFF_GENDER: Prefer not to say
+      CHATBOT_SEED_STAFF2_EMAIL: demo.staff2@ctrl4.local
+      CHATBOT_SEED_STAFF2_NAME: Demo Guidance Staff Two
+      CHATBOT_SEED_STAFF2_NUMBER: DEMO-STF-002
+      CHATBOT_SEED_STAFF2_PASSWORD: DemoStaff2026!
+      CHATBOT_SEED_STAFF2_GENDER: Prefer not to say
+      CHATBOT_SEED_ADMIN_EMAIL: demo.admin@ctrl4.local
+      CHATBOT_SEED_ADMIN_NAME: Demo Administrator
+      CHATBOT_SEED_ADMIN_PASSWORD: DemoAdmin2026!
+      CHATBOT_SEED_ADMIN_GENDER: Prefer not to say
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${CTRL4_DEMO_HOST_PORT:-5001}:5001"
+    volumes:
+      - ctrl4_demo_sessions:/runtime/sessions
+      - ctrl4_demo_logs:/runtime/logs
+
+volumes:
+  ctrl4_demo_mysql:
+  ctrl4_demo_sessions:
+  ctrl4_demo_logs:

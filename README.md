@@ -67,6 +67,76 @@ or configured external runtime assets. Use the Docker section of the
 [Deployment Guide](docs/deployment/deployment_guide.md#docker-and-docker-hub)
 for the supported build, local run, and VPS migration procedure.
 
+### Self-contained Docker demonstration
+
+The repository also provides a **presentation-only** Docker Compose package
+for a local, Gemini-enabled demonstration. It starts an isolated MySQL
+container, uses fictitious accounts, and packages the approved model weight
+and RAG index into a separately tagged demo image. It never uses the
+production database or real user records.
+
+The Gemini API key is supplied only when the container starts. It is never
+placed in Git, Docker Hub, the image, or a database volume. The demo profile
+does not use XAMPP, a local source checkout, the local model directory, or a
+local RAG directory at presentation time.
+
+Maintainers build the demo image from this repository after staging the
+approved assets locally (they are intentionally Git-ignored):
+
+```text
+demo_assets/model.safetensors
+demo_assets/rag_index/knowledge.faiss
+demo_assets/rag_index/metadata.json
+demo_assets/rag_index/manifest.json
+demo_assets/huggingface/hub/models--intfloat--multilingual-e5-large/
+```
+
+To build and test the complete demonstration stack locally:
+
+```bash
+export CHATBOT_GEMINI_API_KEY='paste-your-key-here'
+docker compose -f compose.demo.yaml build
+docker compose -f compose.demo.yaml up -d
+curl --fail --silent --show-error http://127.0.0.1:5001/health
+```
+
+Alternatively, copy `demo.env.example` to a local `demo.env`, enter the key,
+and add `--env-file demo.env` to each Compose command. The local file remains
+Git-ignored.
+
+After its first tested build has been published as
+`jabezapilado/ctrl4-chatbot-mkiii:demo`, a presentation machine needs only
+Docker Desktop, internet access, this small Compose file, and a valid Gemini
+API key. Download the Compose file, set the key in that terminal session, and
+start the demo:
+
+```bash
+curl -fsSLO https://raw.githubusercontent.com/jabezapilado/CTRL4_Chatbot_MKIII/dockerization/compose.demo.yaml
+export CHATBOT_GEMINI_API_KEY='paste-your-key-here'
+docker compose -f compose.demo.yaml pull
+docker compose -f compose.demo.yaml up -d
+```
+
+Docker pulls the application image and the required MySQL image; no XAMPP
+database, CTRL4 source files, local model directory, or local RAG directory is
+used by this demo profile.
+
+The demo creates the following public, fictitious accounts in its isolated
+database. These credentials are only for the local presentation stack and must
+never be reused in a live system.
+
+| Role | Email | Password |
+| --- | --- | --- |
+| Student | `demo.student@ctrl4.local` | `DemoStudent2026!` |
+| Staff | `demo.staff@ctrl4.local` | `DemoStaff2026!` |
+| Administrator | `demo.admin@ctrl4.local` | `DemoAdmin2026!` |
+
+To remove the local demo containers and database after a presentation:
+
+```bash
+docker compose -f compose.demo.yaml down -v
+```
+
 ## Features
 
 ### AI and chatbot

@@ -165,3 +165,8 @@ local_artifacts/
 # Docker Compose runtime mounts (sessions and logs only; model/RAG paths are
 # already excluded above).
 runtime/
+
+# Locally staged artifacts used only when building the self-contained demo
+# image.  These are deliberately never committed or published as source.
+demo_assets/
+demo.env

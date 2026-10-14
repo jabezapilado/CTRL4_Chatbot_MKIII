@@ -1,0 +1,47 @@
+# syntax=docker/dockerfile:1
+
+# A self-contained, presentation-only image.  It contains the approved local
+# model and RAG demo assets staged in demo_assets/; it never includes .env,
+# MySQL data, logs, sessions, or any real Guidance Office records.
+FROM python:3.11-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    HF_HOME=/app/.cache/huggingface
+
+WORKDIR /app
+
+RUN apt-get update \
+    && apt-get install --no-install-recommends -y libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt ./
+RUN python -m pip install --upgrade pip \
+    && python -m pip install --index-url https://download.pytorch.org/whl/cpu torch==2.5.1 \
+    && python -m pip install -r requirements.txt
+
+COPY backend ./backend
+COPY ai_engine ./ai_engine
+COPY frontend ./frontend
+COPY demo ./demo
+COPY demo_assets/model.safetensors ./ai_engine/models/english/latest/model.safetensors
+COPY demo_assets/rag_index ./demo_assets/rag_index
+# The public E5 cache is staged from the verified local Hugging Face cache.
+# Keeping it in the image removes a first-run download on the demo computer.
+COPY demo_assets/huggingface /app/.cache/huggingface
+
+# Replace only the model and generated index paths required by the demo.  The
+# ordinary project image continues to receive these assets as runtime mounts.
+RUN mkdir -p /runtime/sessions /runtime/logs \
+    && useradd --create-home --uid 10001 --shell /usr/sbin/nologin ctrl4 \
+    && chown -R ctrl4:ctrl4 /app /runtime
+
+USER ctrl4
+
+EXPOSE 5001
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=120s --retries=5 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5001/health', timeout=3).read()"
+
+CMD ["python", "demo/entrypoint.py"]
